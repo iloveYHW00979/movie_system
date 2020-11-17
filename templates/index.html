@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>movie</title>
+</head>
+<body>
+<h1>
+        <p style="color:burlywood;text-align:center">电影院信息录入</p>
+</h1>
+    <form action="" method="post">
+        {% csrf_token %}
+        <p style="text-align:center">名称：<input type="text" name="name" /></p>
+        <p style="text-align:center">地址：<input type="text" name="address"/> </p>
+        <p style="text-align:center">电话：<input type="text" name="tel"/></p>
+        <input type="submit" value="提交" />
+
+          <p style="color: red;text-align: center">{{ error_name }}</p>
+
+    </form>
+</body>
+</html>
