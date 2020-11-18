@@ -59,9 +59,11 @@ class LoginView(APIView):
         if not all([user_name, password]):
             return response_failure('用户名或密码不能为空')
         try:
-            user_info = User.objects.filter(user_name=user_name)
+            user_info = User.objects.filter(user_name=user_name).first()
             if user_info:
                return response_success(code=200)
+            else:
+                return response_failure('该用户不存在')
         except:
             raise
 
