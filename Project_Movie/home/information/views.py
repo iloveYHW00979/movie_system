@@ -40,9 +40,14 @@ class InformationDetail(APIView):
         try:
             information = InformationManage.objects.get(id=information_id)
             serializer = InformationSerializer(information)
+            img_list = InformationImg.objects.filter(information_id=information_id).all().values('img_url')
+            result = {
+                'information_data': serializer.data,
+                'img_data': list(img_list)
+            }
         except InformationManage.DoesNotExist:
             return response_failure(code=404)
-        return response_success(code=200, data=serializer.data)
+        return response_success(code=200, data=result)
 
     def put(self, request, information_id):
 
@@ -62,6 +67,8 @@ class InformationDetail(APIView):
         try:
             information = InformationManage.objects.get(id=information_id)
             information.delete()
+            information_img = InformationImg.objects.filter(information_id=information_id).all()
+            
         except InformationManage.DoesNotExist:
             return response_failure(code=404)
         return response_success(code=200)
