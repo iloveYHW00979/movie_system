@@ -29,8 +29,8 @@ class MovieList(APIView):
         movie_era = request.GET.get('movie_era')  # 年代
         movie_status = request.GET.get('movie_status')  # 状态
         movie_sort = request.GET.get('movie_sort')  # 排序 0:按热门排序/1：按时间排序/2：按评价排序
-        movie_sort = movie_sort if movie_sort is not None else 1
-        sort_list = ['-sort_hot', '-movie_release_date', '-movie_score']
+        movie_sort = int(movie_sort) if movie_sort is not None else 1
+        sort_list = ['-movie_hot', '-movie_release_date', '-movie_score']
         kwargs = {}
 
         if movie_type is not None:
@@ -278,3 +278,40 @@ class MovieImagesList(APIView):
             serializer.save()
             return response_success(code=201)
         return response_failure(code=400)
+
+
+def get_rank_list(request):
+    try:
+        # 今日票房排行
+        box_office = Movies.objects.filter(movie_status=80).all() \
+            .order_by('-movie_box_office')[:10]
+        box_office_serializer = MoviesSerializer(box_office, many=True)
+        box_office_list = []
+        for index, box_office_item in enumerate(box_office_serializer.data):
+            box_office_list.append({
+                'rank': index+1,
+                'movie_name': box_office_item['movie_name'],
+                'movie_box_office': box_office_item['movie_box_office'],
+            })
+    except Movies.DoesNotExist:
+        return response_failure(code=404)
+
+    try:
+        # 最受期待排行
+        anticipate = Movies.objects.filter(movie_status=81).all() \
+            .order_by('-movie_anticipate')[:10]
+        anticipate_serializer = MoviesSerializer(anticipate, many=True)
+        anticipate_list = []
+        for index, anticipate_item in enumerate(anticipate_serializer.data):
+            anticipate_list.append({
+                'rank': index + 1,
+                'movie_name': anticipate_item['movie_name'],
+                'movie_anticipate': anticipate_item['movie_anticipate'],
+            })
+    except Movies.DoesNotExist:
+        return response_failure(code=404)
+    result = {
+        'box_office_list': box_office_list,
+        'anticipate_list': anticipate_list
+    }
+    return response_success(code=200, data=result)
