@@ -1,7 +1,8 @@
 from Project_Movie.home.cinema.models import Cinema, Viewing, Order, Seat
 from Project_Movie.home.movies.models import Movies, SysDictData, Cast, MovieImages, Comment
-from Project_Movie.home.information.models import InformationManage
+from Project_Movie.home.information.models import InformationManage, InformationImg
 from rest_framework import serializers
+import time
 
 from Project_Movie.home.user.models import User
 
@@ -44,8 +45,9 @@ class MoviesSerializer(serializers.ModelSerializer):
     region_label = serializers.SerializerMethodField()
     era_label = serializers.SerializerMethodField()
     status_label = serializers.SerializerMethodField()
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
-    movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    movie_hot = serializers.SerializerMethodField()
 
     class Meta:
         model = Movies
@@ -70,6 +72,11 @@ class MoviesSerializer(serializers.ModelSerializer):
         movie = obj
         movie_status = SysDictData.objects.filter(dict_code=movie.movie_status)[0].dict_label
         return movie_status
+
+    def get_movie_hot(self, obj):
+        movie = obj
+        order_count = Order.objects.filter(movie_id=movie.id).count()
+        return order_count
 
 
 class SysDataSerializer(serializers.ModelSerializer):
@@ -107,7 +114,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """
     评论数据序列表类
     """
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False, read_only=True)
+    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = Comment
@@ -128,7 +135,18 @@ class InformationSerializer(serializers.ModelSerializer):
     """
     资讯数据序列表类
     """
+    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = InformationManage
         fields = "__all__"
+
+
+# class InformationImgSerializer(serializers.ModelSerializer):
+#     """
+#     资讯图片序列表类
+#     """
+#
+#     class Meta:
+#         model = InformationImg
+#         fields = "__all__"
