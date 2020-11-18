@@ -36,8 +36,8 @@ class Viewing(models.Model):
 
 
 class Seat(models.Model):
-    view_id = models.IntegerField(verbose_name=u'场次id')
-    seat = models.CharField(max_length=255, verbose_name=u'座位')
+    view_id = models.IntegerField(verbose_name=u'场次id', null=True)
+    seat = models.CharField(max_length=255, verbose_name=u'座位', null=True)
 
     class Meta:
         # abstract = True

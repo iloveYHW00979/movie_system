@@ -12,11 +12,21 @@ class UserInfoView(APIView):
         """进入用户个人信息界面"""
         user_id = request.query_params.get('id')  # 登录用户
         try:
-            user = User.objects.get(id=user_id)
-            serializer = UserSerializer(user)
+            user = User.objects.filter(id=user_id).first()
+            if user:
+                serializer = UserSerializer(user)
+                data = serializer.data
+                if user.user_name == 'admin':
+                    data = {
+                        "roles":['admin'],
+                        "data":serializer.data
+                    }
+
+            else:
+                return response_failure('没有该id的用户')
         except Exception as e:
             raise e
-        return response_success(code=200, data=serializer.data)
+        return response_success(code=200, data=data)
 
     def put(self, request):
         """更新用户信息"""
