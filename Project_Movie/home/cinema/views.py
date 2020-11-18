@@ -305,3 +305,5 @@ class CinemaOrder(APIView):
             except:
                 raise
 
+class TestView(APIView):
+    pass

@@ -13,8 +13,8 @@ class RegisterView(APIView):
 
     def post(self, request):
         # - 获取请求参数
-        query_params = request.query_params
-        username = query_params.get('name')
+        query_params = request.data
+        user_name = query_params.get('user_name')
         password = query_params.get('password')
         password2 = query_params.get('password2')
         e_mail = query_params.get('e_mail')
@@ -22,17 +22,17 @@ class RegisterView(APIView):
 
         # - 校验数据合法性
         # 所有的参数都不为空时,all方法才会返回True
-        if not all([username, password, password2]):
-            return render(request,  {'errmsg': '参数不能为空'})
+        if not all([user_name, password, password2]):
+            return response_failure('参数不能为空')
 
         if password != password2:
-            return render(request, 'register.html', {'errmsg': '两次输入的密码不一致'})
+            return response_failure('两次输入的密码不一致')
 
         if not re.match('^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', e_mail):
-            return render(request, 'register.html', {'errmsg': '邮箱格式不正确'})
+            return response_failure('邮箱格式不正确')
 
         try:
-            user_info = User.objects.filter(name=username)
+            user_info = User.objects.filter(user_name=user_name)
             if user_info:
                 return response_failure('用户名已存在')
             else:
@@ -52,16 +52,18 @@ class LoginView(APIView):
 
         # 获取登录请求参数
         query_params = request.data
-        name = query_params.get('name')
+        user_name = query_params.get('user_name')
         password = query_params.get('password')
 
         # 校验参数合法性
-        if not all([name, password]):
-            return render(request, 'login.html', {'errmsg': '用户名或密码不能为空'})
+        if not all([user_name, password]):
+            return response_failure('用户名或密码不能为空')
         try:
-            user_info = User.objects.filter(name=name)
+            user_info = User.objects.filter(user_name=user_name).first()
             if user_info:
                return response_success(code=200)
+            else:
+                return response_failure('该用户不存在')
         except:
             raise
 
@@ -78,7 +80,7 @@ class LogoutView(APIView):
         """注销功能:清空用户的session数据(用户id)"""
 
         # 会清除用户id session数据
-        logout(request)
+        pass
 
 
 

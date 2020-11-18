@@ -3,22 +3,58 @@ from rest_framework.views import APIView
 
 from Project_Movie.Util.serializers import UserSerializer
 from Project_Movie.Util.utils import response_failure, response_success
+from Project_Movie.home.cinema.models import Order
 from Project_Movie.home.user.models import *
 
-class UserInfoView(LoginRequiredMixin, APIView):
+class UserInfoView(APIView):
 
     def get(self, request):
         """进入用户个人信息界面"""
-
         user_id = request.query_params.get('id')  # 登录用户
         try:
-            data = User.objects.filter(id=user_id).values()
+            user = User.objects.get(id=user_id)
+            serializer = UserSerializer(user)
         except Exception as e:
             raise e
-        return response_success(data=data)
+        return response_success(code=200, data=serializer.data)
 
+    def put(self, request):
+        """更新用户信息"""
+        query_params = request.data
+        user_id = query_params.get('id')
+        password = query_params.get('password')
+        if password == '':
+            return response_failure('密码不能为空')
+        try:
+            user_info = User.objects.filter(id=user_id).first()
+            if user_info:
+                serializer = UserSerializer(user_info, request.data)
+                if serializer.is_valid():
+                    serializer.save()
+            else:
+                return response_failure('没有该用户id')
+        except Exception as e:
+            raise e
+        return response_success(code=200)
 
-class UserOrderView(LoginRequiredMixin, APIView):
+    def delete(self, request):
+        """删除用户信息"""
+        user_id = request.data.get('id')
+        if user_id:
+            try:
+                user_info = User.objects.filter(id=user_id)
+                order = Order.objects.filter(user_id=user_id)
+                if user_info:
+                    user_info.delete()
+                else:
+                    return response_failure('没有该用户id')
+                if order:
+                    order.delete()
+                return response_success(code=200)
+            except:
+                return response_failure('数据库操作错误:没有该用户')
+
+class UserOrderView(APIView):
 
     def get(self, request):
         """进入用户订单界面"""
