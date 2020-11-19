@@ -1,10 +1,6 @@
 import re
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.utils import IntegrityError
-from django.shortcuts import render
 from rest_framework.views import APIView
-
 from Project_Movie.Util.serializers import UserSerializer
 from Project_Movie.Util.utils import response_failure, response_success
 from Project_Movie.home.user.models import *
@@ -18,7 +14,6 @@ class RegisterView(APIView):
         password = query_params.get('password')
         password2 = query_params.get('password2')
         e_mail = query_params.get('e_mail')
-
 
         # - 校验数据合法性
         # 所有的参数都不为空时,all方法才会返回True
@@ -43,8 +38,6 @@ class RegisterView(APIView):
         except IntegrityError:  # 数据完整性错误
             return response_failure('参数错误')
 
-
-
 class LoginView(APIView):
 
     def post(self, request):
@@ -60,19 +53,18 @@ class LoginView(APIView):
             return response_failure('用户名或密码不能为空')
         try:
             user_info = User.objects.filter(user_name=user_name).first()
-            if user_info:
-               return response_success(code=200)
-            else:
-                return response_failure('该用户不存在')
         except:
             raise
+        if user_info:
+           return response_success(code=200)
+        else:
+            return response_failure('该用户不存在')
 
         # # 设置session有效期
         # if remember == 'on': # 勾选保存用户登录状态
         #     request.session.set_expiry(None)  # 保存登录状态两周
         # else:
         #     request.session.set_expiry(0)    # 关闭浏览器后,清除登录状态
-
 
 class LogoutView(APIView):
 

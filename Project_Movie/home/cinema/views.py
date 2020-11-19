@@ -102,14 +102,15 @@ class CinemaView(APIView):
         if query_param:
             try:
                 cinema = Cinema.objects.filter(id=query_param.get('id'))
-                if cinema is None:
-                    error_info = '该影院不存在'
-                    return response_failure(message=error_info)
-                else:
-                    cinema.delete()
-                    return response_success(code=200)
             except:
                 raise
+            if cinema is None:
+                error_info = '该影院不存在'
+                return response_failure(message=error_info)
+            else:
+                cinema.delete()
+                return response_success(code=200)
+
 
 # 获取单个影院信息
 class CinemaDetail(APIView):

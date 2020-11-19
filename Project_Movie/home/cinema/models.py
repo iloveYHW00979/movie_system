@@ -1,7 +1,5 @@
 from django.db import models
 
-
-
 class Cinema(models.Model):
     name = models.CharField(max_length=255, verbose_name=u'影院名称', null=True)
     address = models.CharField(max_length=255, verbose_name=u'影院地址', null=True)
@@ -11,15 +9,10 @@ class Cinema(models.Model):
     administrative_district = models.IntegerField(verbose_name=u'行政区', null=True)
     special_hall = models.IntegerField(verbose_name=u'特殊厅', null=True)
     cinema_service = models.IntegerField(verbose_name=u'服务', null=True)
-
     class Meta:
         # abstract = True
         db_table = 'cinema'
         verbose_name = u'影院'
-    # def __str__(self):
-
-
-# TODO viewing表里面的座位数据尚未定义
 
 class Viewing(models.Model):
     view_name = models.CharField(max_length=256, verbose_name='放映厅名称')
@@ -30,17 +23,14 @@ class Viewing(models.Model):
     movie_id = models.IntegerField(verbose_name=u'电影id')
     date_time = models.DateTimeField(verbose_name=u'日期', null=True)
     cinema_id = models.IntegerField(verbose_name='影院id', null=True)
-
     class Meta:
         # abstract = True
         db_table = 'viewing'
         verbose_name = u'放映厅'
 
-
 class Seat(models.Model):
     view_id = models.IntegerField(verbose_name=u'场次id', null=True)
     seat = models.TextField(verbose_name=u'座位', null=True)
-
     class Meta:
         # abstract = True
         db_table = 'seat'
@@ -57,7 +47,6 @@ class Order(models.Model):
     price = models.CharField(max_length=256, verbose_name='价格')
     create_time = models.DateTimeField(verbose_name='下单时间')
     status = models.BooleanField(verbose_name='订单状态 0:未支付 1:已支付')
-
     class Meta:
         # abstract = True
         db_table = 'order'
