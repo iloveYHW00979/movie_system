@@ -1,6 +1,8 @@
 import json
 import datetime
 from django.http import HttpResponse
+from rest_framework.pagination import PageNumberPagination
+
 from Project_Movie import settings
 import random
 
@@ -67,6 +69,10 @@ def paginate_success(code=None, message=None, data=None, total=0):
         'rows': data,  # 返回数据
     }, cls=JSONEncoder), 'application/json')
 
+# 分页页数问题
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'size'
 
 # # 上传图片
 # def upload_image(img_file):

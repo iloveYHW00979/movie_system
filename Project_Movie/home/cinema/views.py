@@ -8,11 +8,10 @@ from Project_Movie.Util.serializers import SysDataSerializer, CinemaSerializer, 
     SeatSerializer
 from Project_Movie.home.cinema.models import *
 import json
-from Project_Movie.Util.utils import response_success, response_failure, paginate_success
+from Project_Movie.Util.utils import response_success, response_failure, paginate_success, CustomPageNumberPagination
 from Project_Movie.home.movies.models import SysDictData
 from rest_framework.pagination import PageNumberPagination
 
-page = PageNumberPagination()
 # 操作影院信息
 class CinemaView(APIView):
     # 获取某个属性下的影院信息
@@ -34,12 +33,12 @@ class CinemaView(APIView):
                 if cinema_service:
                     kwargs['cinema_service'] = cinema_service
                 try:
-                    data = Cinema.objects.filter(**kwargs)
+                    data = Cinema.objects.filter(**kwargs).order_by('id')
                 except Exception as e:
                     raise e
                 if data:
                     # 创建分页对象
-                    page_order = page.paginate_queryset(queryset=data, request=request, view=self)  # 获取分页的数据
+                    page_order = CustomPageNumberPagination().paginate_queryset(queryset=data, request=request, view=self)  # 获取分页的数据
                     serializer = CinemaSerializer(page_order, many=True)
                     return paginate_success(code=200, data=serializer.data, total=data.count())
                 else:
@@ -47,12 +46,12 @@ class CinemaView(APIView):
         else:
             # 获取所有影院列表信息
             try:
-                all_cinemas = Cinema.objects.all()
+                all_cinemas = Cinema.objects.all().order_by('id')
             except:
                 return response_failure(code=409)
             if all_cinemas:
                 # 创建分页对象
-                page_order = page.paginate_queryset(queryset=all_cinemas, request=request, view=self)  # 获取分页的数据
+                page_order = CustomPageNumberPagination().paginate_queryset(queryset=all_cinemas, request=request, view=self)  # 获取分页的数据
                 serializer = CinemaSerializer(page_order, many=True)
                 return paginate_success(code=200, data=serializer.data, total=all_cinemas.count())
             else:
@@ -253,12 +252,12 @@ class CinemaOrder(APIView):
                     order_info = Order.objects.filter(user_id=user_id, order_num=order_num)
                 elif user_id:
                     # 查询该用户的所有订单信息
-                    order_info = Order.objects.filter(user_id = user_id)
+                    order_info = Order.objects.filter(user_id = user_id).order_by('id')
                 else:
                     return response_failure('当前没有用户登录')
                 if order_info:
                     # 创建分页对象
-                    page_order = page.paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
+                    page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
                     serializer = OrderSerializer(page_order, many=True)
                 else:
                     return response_failure('该用户没有订单信息')
@@ -362,12 +361,12 @@ class SearchView(APIView):
         query_params = request.query_params
         if query_params:
             try:
-                cinema = Cinema.objects.filter(name__contains=query_params.get('cinema_name'))
+                cinema = Cinema.objects.filter(name__contains=query_params.get('cinema_name')).order_by('id')
             except:
                 raise
             if cinema:
                 # 创建分页对象
-                page_order = page.paginate_queryset(queryset=cinema, request=request, view=self)  # 获取分页的数据
+                page_order = CustomPageNumberPagination().paginate_queryset(queryset=cinema, request=request, view=self)  # 获取分页的数据
                 serializer = CinemaSerializer(page_order, many=True)
                 return paginate_success(code=200, data=serializer.data, total=cinema.count())
             else:
