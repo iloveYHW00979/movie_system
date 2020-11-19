@@ -28,8 +28,9 @@ class MovieList(APIView):
         movie_era = request.GET.get('movie_era')  # 年代
         movie_status = request.GET.get('movie_status')  # 状态
         movie_sort = request.GET.get('movie_sort')  # 排序 0:按热门排序/1：按时间排序/2：按评价排序
-        movie_sort = int(movie_sort) if movie_sort is not None else 1
+        movie_sort = int(movie_sort) if movie_sort is not None else 0
         sort_list = ['-movie_hot', '-movie_release_date', '-movie_score']
+        key_word = request.GET.get('key_word')
         kwargs = {}
 
         if movie_type is not None:
@@ -40,6 +41,8 @@ class MovieList(APIView):
             kwargs['movie_era'] = movie_era
         if movie_status is not None:
             kwargs['movie_status'] = movie_status
+        if key_word is not None:
+            kwargs['movie_name__contains'] = key_word
 
         try:
             movies = Movies.objects.filter(**kwargs).all().order_by(sort_list[movie_sort])
@@ -325,23 +328,3 @@ class RankList(APIView):
         }
         return response_success(code=200, data=result)
 
-
-class SearchMovie(APIView):
-    """
-    模糊查询
-    """
-
-    def get(self, request):
-        key_word = request.GET.get('key_word')
-        if key_word is None:
-            return response_failure(code=404)
-
-        try:
-            movies = Movies.objects.filter(movie_name__contains=key_word).all()
-            total = movies.count()
-            pg = CustomPageNumberPagination()  # 创建分页对象
-            page_movies = pg.paginate_queryset(queryset=movies, request=request, view=self)  # 获取分页的数据
-            serializer = MoviesSerializer(page_movies, many=True)
-        except Movies.DoesNotExist:
-            return response_failure(code=404)
-        return paginate_success(code=200, data=serializer.data, total=total)

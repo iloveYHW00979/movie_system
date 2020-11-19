@@ -10,7 +10,7 @@ from django.db import models
 
 class InformationImg(models.Model):
     information_id = models.IntegerField(null=True, verbose_name='资讯id')
-    img_url = models.CharField(max_length=255, null=True, verbose_name='图片')
+    img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
 
     class Meta:
         managed = False
@@ -19,10 +19,10 @@ class InformationImg(models.Model):
 
 
 class InformationManage(models.Model):
-    title = models.CharField(max_length=50, verbose_name='标题')
-    content = models.CharField(max_length=500, verbose_name='内容')
+    title = models.CharField(max_length=50, verbose_name='标题', null=True)
+    content = models.CharField(max_length=500, verbose_name='内容', null=True)
     create_time = models.DateTimeField(null=True, verbose_name='创建时间')
-    img_url = models.CharField(max_length=255, null=True, verbose_name='图片')
+    img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
     issuer = models.CharField(max_length=50, null=True, verbose_name='发布者')
 
     class Meta:
@@ -32,7 +32,7 @@ class InformationManage(models.Model):
 
 
 class Advertising(models.Model):
-    img_url = models.CharField(max_length=255, null=True, verbose_name='图片')
+    img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
     img_link = models.CharField(max_length=255, null=True, verbose_name='跳转链接')
 
     class Meta:

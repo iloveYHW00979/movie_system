@@ -53,12 +53,12 @@ class LoginView(APIView):
             return response_failure('用户名或密码不能为空')
         try:
             user_info = User.objects.filter(user_name=user_name).first()
+            if user_info:
+               return response_success(code=200, data=UserSerializer(user_info).data)
+            else:
+                return response_failure('该用户不存在')
         except:
             raise
-        if user_info:
-           return response_success(code=200)
-        else:
-            return response_failure('该用户不存在')
 
         # # 设置session有效期
         # if remember == 'on': # 勾选保存用户登录状态

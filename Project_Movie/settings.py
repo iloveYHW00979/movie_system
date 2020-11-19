@@ -116,7 +116,7 @@ DATABASES = {
             'PORT': 3306,  # 端口
             'USER': 'root',  # 数据库用户名
             'PASSWORD': '123456',  # 数据库密码
-            'ATOMIC_REQUESTS': True # 数据库事务
+            'ATOMIC_REQUESTS': True  # 数据库事务
         }
 }
 
@@ -162,6 +162,19 @@ REST_FRAMEWORK = {
     # 每页返回数量
     'PAGE_SIZE': 10,  # 默认 None
 }
+
+# 上传图片的类型
+ALLOWED_IMG_TYPE = ['jpg', 'png', 'PNG']
+
+# 上传图片的地址
+UPLOAD_ADDRESS = 'static/upload/'
+
+STATIC_URL = '/static/'
+# 配置静态文件夹
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 #
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR/STATIC_URL, 'media')

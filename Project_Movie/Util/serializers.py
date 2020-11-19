@@ -122,8 +122,8 @@ class MoviesSerializer(serializers.ModelSerializer):
     region_label = serializers.SerializerMethodField()
     era_label = serializers.SerializerMethodField()
     status_label = serializers.SerializerMethodField()
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
+    movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
     movie_hot = serializers.SerializerMethodField()
 
     class Meta:
@@ -219,14 +219,14 @@ class InformationSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-# class InformationImgSerializer(serializers.ModelSerializer):
-#     """
-#     资讯图片序列表类
-#     """
-#
-#     class Meta:
-#         model = InformationImg
-#         fields = "__all__"
+class InformationImgSerializer(serializers.ModelSerializer):
+    """
+    资讯图片序列表类
+    """
+
+    class Meta:
+        model = InformationImg
+        fields = "__all__"
 
 
 class AdvertisingSerializer(serializers.ModelSerializer):
@@ -237,3 +237,18 @@ class AdvertisingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertising
         fields = "__all__"
+
+
+# #商品的反序列化
+# class GoodUnSerializer(serializers.Serializer):
+#     #商品名称约束
+#     name = serializers.CharField(max_length=32)
+#     #商品价格约束
+#     price = serializers.DecimalField(max_digits=9,decimal_places=2)
+#     #商品分类约束
+#     cate_id = serializers.IntegerField()
+#     #商品图片约束
+#     img = serializers.CharField(max_length=255)
+#     def create(self, validated_data):
+#         #将获取的字典类型打散
+#         return models.Goods.objects.create(**validated_data)

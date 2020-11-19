@@ -1,7 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 import json
-from Project_Movie.Util.utils import response_success, response_failure, paginate_success
-from Project_Movie.Util.serializers import InformationSerializer, AdvertisingSerializer
+from Project_Movie.Util.utils import response_success, response_failure, \
+    paginate_success
+from Project_Movie.Util.serializers import InformationSerializer, InformationImgSerializer, AdvertisingSerializer
 from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 
 from rest_framework.views import APIView
@@ -64,6 +65,7 @@ class InformationDetail(APIView):
             return response_success(code=200, data=serializer.data)
         return response_failure(code=400)
 
+    # TODO 级联删除
     def delete(self, request, information_id):
 
         try:
