@@ -140,10 +140,15 @@ class CastList(APIView):
 
     def get(self, request):
         movie_id = request.GET.get('movie_id')
+        key_word = request.GET.get('key_word')
+        kwargs = {'movie_id': movie_id}
         if movie_id is None:
             return response_failure(code=400)
+        if key_word is not None:
+            kwargs['cast_name__contains'] = key_word
+
         try:
-            cast = Cast.objects.filter(movie_id=movie_id).all()
+            cast = Cast.objects.filter(**kwargs).all()
             serializer = CastSerializer(cast, many=True)
         except Cast.DoesNotExist:
             return response_failure(code=404)

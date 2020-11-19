@@ -122,8 +122,8 @@ class MoviesSerializer(serializers.ModelSerializer):
     region_label = serializers.SerializerMethodField()
     era_label = serializers.SerializerMethodField()
     status_label = serializers.SerializerMethodField()
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
-    movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
+    # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
+    # movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
     movie_hot = serializers.SerializerMethodField()
 
     class Meta:
@@ -191,7 +191,7 @@ class CommentSerializer(serializers.ModelSerializer):
     """
     评论数据序列表类
     """
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = Comment
@@ -212,7 +212,7 @@ class InformationSerializer(serializers.ModelSerializer):
     """
     资讯数据序列表类
     """
-    create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
         model = InformationManage
