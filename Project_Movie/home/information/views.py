@@ -1,8 +1,8 @@
 from django.http import HttpResponse, JsonResponse
 import json
 from Project_Movie.Util.utils import response_success, response_failure, paginate_success
-from Project_Movie.Util.serializers import InformationSerializer
-from Project_Movie.home.information.models import InformationManage, InformationImg
+from Project_Movie.Util.serializers import InformationSerializer, AdvertisingSerializer
+from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
@@ -14,13 +14,15 @@ class InformationList(APIView):
     """
 
     def get(self, request):
+        try:
+            information = InformationManage.objects.all()
+            total = information.count()
 
-        information = InformationManage.objects.all()
-        total = information.count()
-
-        pg = PageNumberPagination()  # 创建分页对象
-        page_information = pg.paginate_queryset(queryset=information, request=request, view=self)  # 获取分页的数据
-        serializer = InformationSerializer(page_information, many=True)
+            pg = PageNumberPagination()  # 创建分页对象
+            page_information = pg.paginate_queryset(queryset=information, request=request, view=self)  # 获取分页的数据
+            serializer = InformationSerializer(page_information, many=True)
+        except InformationManage.DoesNotExist:
+            return response_failure(code=404)
         return paginate_success(code=200, data=serializer.data, total=total)
 
     def post(self, request):
@@ -68,8 +70,33 @@ class InformationDetail(APIView):
             information = InformationManage.objects.get(id=information_id)
             information.delete()
             information_img = InformationImg.objects.filter(information_id=information_id).all()
-            
+
         except InformationManage.DoesNotExist:
             return response_failure(code=404)
         return response_success(code=200)
 
+
+class AdvertisingInfor(APIView):
+    """
+    检索，更新一个轮播图示例。
+    """
+
+    def get(self, request):
+        try:
+            advertising = Advertising.objects.first()
+            serializer = AdvertisingSerializer(advertising)
+        except InformationManage.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200, data=serializer.data)
+
+    def put(self, request):
+        try:
+            advertising = Advertising.objects.first()
+            serializer = AdvertisingSerializer(advertising, data=request.data)
+        except Advertising.DoesNotExist:
+            return response_failure(code=404)
+
+        if serializer.is_valid():
+            serializer.save()
+            return response_success(code=200, data=serializer.data)
+        return response_failure(code=400)

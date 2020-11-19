@@ -1,6 +1,6 @@
 from Project_Movie.home.cinema.models import Cinema, Viewing, Order, Seat
 from Project_Movie.home.movies.models import Movies, SysDictData, Cast, MovieImages, Comment
-from Project_Movie.home.information.models import InformationManage, InformationImg
+from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 from rest_framework import serializers
 import time
 
@@ -150,3 +150,13 @@ class InformationSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = InformationImg
 #         fields = "__all__"
+
+
+class AdvertisingSerializer(serializers.ModelSerializer):
+    """
+    首页轮播图数据序列表类
+    """
+
+    class Meta:
+        model = Advertising
+        fields = "__all__"

@@ -9,5 +9,6 @@ urlpatterns = {
     path('cast/', views.CastList.as_view()),
     path('comment/', views.CommentList.as_view()),
     path('movie_images/', views.MovieImagesList.as_view()),
-    path('rank_list/', views.get_rank_list)
+    path('rank_list/', views.RankList.as_view()),
+    path('search_movie/', views.SearchMovie.as_view()),
 }

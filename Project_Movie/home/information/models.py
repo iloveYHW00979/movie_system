@@ -31,3 +31,11 @@ class InformationManage(models.Model):
         verbose_name = '资讯'
 
 
+class Advertising(models.Model):
+    img_url = models.CharField(max_length=255, null=True, verbose_name='图片')
+    img_link = models.CharField(max_length=255, null=True, verbose_name='跳转链接')
+
+    class Meta:
+        managed = False
+        db_table = 'advertising'
+        verbose_name = '首页轮播图'

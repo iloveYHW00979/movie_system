@@ -12,10 +12,9 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 
 
-# class CustomPageNumberPagination(PageNumberPagination):
-#     page_size = 10
-# page_size_query_param = 'size'
-# max_page_size = 10
+class CustomPageNumberPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'size'
 
 
 class MovieList(APIView):
@@ -42,12 +41,15 @@ class MovieList(APIView):
         if movie_status is not None:
             kwargs['movie_status'] = movie_status
 
-        movies = Movies.objects.filter(**kwargs).all().order_by(sort_list[movie_sort])
-        total = movies.count()
+        try:
+            movies = Movies.objects.filter(**kwargs).all().order_by(sort_list[movie_sort])
+            total = movies.count()
 
-        pg = PageNumberPagination()  # 创建分页对象
-        page_movies = pg.paginate_queryset(queryset=movies, request=request, view=self)  # 获取分页的数据
-        serializer = MoviesSerializer(page_movies, many=True)
+            pg = CustomPageNumberPagination()  # 创建分页对象
+            page_movies = pg.paginate_queryset(queryset=movies, request=request, view=self)  # 获取分页的数据
+            serializer = MoviesSerializer(page_movies, many=True)
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
         return paginate_success(code=200, data=serializer.data, total=total)
 
     def post(self, request):
@@ -280,38 +282,66 @@ class MovieImagesList(APIView):
         return response_failure(code=400)
 
 
-def get_rank_list(request):
-    try:
-        # 今日票房排行
-        box_office = Movies.objects.filter(movie_status=80).all() \
-            .order_by('-movie_box_office')[:10]
-        box_office_serializer = MoviesSerializer(box_office, many=True)
-        box_office_list = []
-        for index, box_office_item in enumerate(box_office_serializer.data):
-            box_office_list.append({
-                'rank': index+1,
-                'movie_name': box_office_item['movie_name'],
-                'movie_box_office': box_office_item['movie_box_office'],
-            })
-    except Movies.DoesNotExist:
-        return response_failure(code=404)
+class RankList(APIView):
+    """
+    查询今日票房排行和最受期待排行
+    """
 
-    try:
-        # 最受期待排行
-        anticipate = Movies.objects.filter(movie_status=81).all() \
-            .order_by('-movie_anticipate')[:10]
-        anticipate_serializer = MoviesSerializer(anticipate, many=True)
-        anticipate_list = []
-        for index, anticipate_item in enumerate(anticipate_serializer.data):
-            anticipate_list.append({
-                'rank': index + 1,
-                'movie_name': anticipate_item['movie_name'],
-                'movie_anticipate': anticipate_item['movie_anticipate'],
-            })
-    except Movies.DoesNotExist:
-        return response_failure(code=404)
-    result = {
-        'box_office_list': box_office_list,
-        'anticipate_list': anticipate_list
-    }
-    return response_success(code=200, data=result)
+    def get(self, request):
+        try:
+            # 今日票房排行
+            box_office = Movies.objects.filter(movie_status=80).all() \
+                .order_by('-movie_box_office')[:10]
+            box_office_serializer = MoviesSerializer(box_office, many=True)
+            box_office_list = []
+            for index, box_office_item in enumerate(box_office_serializer.data):
+                box_office_list.append({
+                    'rank': index+1,
+                    'movie_id': box_office_item['id'],
+                    'movie_name': box_office_item['movie_name'],
+                    'movie_box_office': box_office_item['movie_box_office'],
+                })
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
+
+        try:
+            # 最受期待排行
+            anticipate = Movies.objects.filter(movie_status=81).all() \
+                .order_by('-movie_anticipate')[:10]
+            anticipate_serializer = MoviesSerializer(anticipate, many=True)
+            anticipate_list = []
+            for index, anticipate_item in enumerate(anticipate_serializer.data):
+                anticipate_list.append({
+                    'rank': index + 1,
+                    'movie_id': anticipate_item['id'],
+                    'movie_name': anticipate_item['movie_name'],
+                    'movie_anticipate': anticipate_item['movie_anticipate'],
+                })
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
+        result = {
+            'box_office_list': box_office_list,
+            'anticipate_list': anticipate_list
+        }
+        return response_success(code=200, data=result)
+
+
+class SearchMovie(APIView):
+    """
+    模糊查询
+    """
+
+    def get(self, request):
+        key_word = request.GET.get('key_word')
+        if key_word is None:
+            return response_failure(code=404)
+
+        try:
+            movies = Movies.objects.filter(movie_name__contains=key_word).all()
+            total = movies.count()
+            pg = CustomPageNumberPagination()  # 创建分页对象
+            page_movies = pg.paginate_queryset(queryset=movies, request=request, view=self)  # 获取分页的数据
+            serializer = MoviesSerializer(page_movies, many=True)
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
+        return paginate_success(code=200, data=serializer.data, total=total)
