@@ -61,10 +61,39 @@ class ViewingSerializer(serializers.ModelSerializer):
         return cinema_data
 
 class OrderSerializer(serializers.ModelSerializer):
+
+    # user_info = serializers.SerializerMethodField()
+    # movie_info = serializers.SerializerMethodField()
+    # cinema_info = serializers.SerializerMethodField()
+    view_info = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = "__all__"
 
+    # def get_user_info(self, obj):
+    #     order = obj
+    #     user_id = User.objects.filter(id=order.user_id)[0]
+    #     user_info = UserSerializer(user_id).data
+    #     return user_info
+    #
+    # def get_movie_info(self, obj):
+    #     order = obj
+    #     movie_id = Movies.objects.filter(id=order.movie_id)[0]
+    #     movie_info = MoviesSerializer(movie_id).data
+    #     return movie_info
+    #
+    # def get_cinema_info(self, obj):
+    #     order = obj
+    #     cinema_id = Cinema.objects.filter(id=order.cinema_id)[0]
+    #     cinema_data = CinemaSerializer(cinema_id).data
+    #     return cinema_data
+
+    def get_view_info(self, obj):
+        order = obj
+        view_id = Viewing.objects.filter(id=order.view_id)[0]
+        view_data = ViewingSerializer(view_id).data
+        return view_data
 
 class SeatSerializer(serializers.ModelSerializer):
     view_info = serializers.SerializerMethodField()
