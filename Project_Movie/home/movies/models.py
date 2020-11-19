@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 # Create your models here.
@@ -6,8 +7,8 @@ from django.db import models
 class Movies(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name='电影id')
-    create_time = models.DateTimeField(verbose_name='创建时间', null=True)
-    update_time = models.DateTimeField(verbose_name='更新时间', null=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', null=True, default=timezone.now)
+    update_time = models.DateTimeField(verbose_name='更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_name = models.CharField(max_length=32, verbose_name='电影名称', null=True)
     movie_score = models.FloatField(verbose_name='评分', null=True)
@@ -33,8 +34,8 @@ class Comment(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='评论id')
     movie_id = models.IntegerField(verbose_name=u'电影id')
     user_id = models.IntegerField(verbose_name=u'用户id')
-    create_time = models.DateTimeField(verbose_name=u'创建时间', null=True)
-    update_time = models.DateTimeField(verbose_name=u'更新时间', null=True)
+    create_time = models.DateTimeField(verbose_name=u'创建时间', null=True, default=timezone.now)
+    update_time = models.DateTimeField(verbose_name=u'更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name=u'删除时间', null=True)
     score = models.IntegerField(verbose_name=u'评分')
     content = models.TextField(null=True, verbose_name=u'评论')
@@ -49,14 +50,14 @@ class Comment(models.Model):
 class Cast(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name='演职人员id')
-    create_time = models.DateTimeField(verbose_name='创建时间', null=True)
-    update_time = models.DateTimeField(verbose_name='更新时间', null=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', null=True, default=timezone.now)
+    update_time = models.DateTimeField(verbose_name='更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_id = models.IntegerField(verbose_name='电影id）')
-    cast_picture = models.CharField(max_length=255, verbose_name='人员图片')
-    cast_name = models.CharField(max_length=32, verbose_name='姓名')
+    cast_picture = models.CharField(max_length=255, verbose_name='人员图片', null=True)
+    cast_name = models.CharField(max_length=32, verbose_name='姓名', null=True)
     role = models.CharField(max_length=32, verbose_name='饰演角色', null=True)
-    cast_type = models.IntegerField(verbose_name='人员类型（关联基础数据表）')
+    cast_type = models.IntegerField(verbose_name='人员类型（关联基础数据表）', null=True)
 
     class Meta:
         db_table = 'cast'
@@ -67,8 +68,8 @@ class Cast(models.Model):
 class MovieImages(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name='图片id')
-    create_time = models.DateTimeField(verbose_name='创建时间', null=True)
-    update_time = models.DateTimeField(verbose_name='更新时间', null=True)
+    create_time = models.DateTimeField(verbose_name='创建时间', null=True, default=timezone.now)
+    update_time = models.DateTimeField(verbose_name='更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_id = models.CharField(max_length=128, verbose_name='电影id')
     image = models.CharField(max_length=255, verbose_name='图片')
@@ -117,3 +118,5 @@ class SysDictData(models.Model):
     class Meta:
         db_table = 'sys_dict_data'
         verbose_name = '基础数据'
+
+

@@ -161,20 +161,21 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 每页返回数量
     'PAGE_SIZE': 10,  # 默认 None
+    'DATETIME_FORMAT': "%Y-%m-%d %H:%M:%S",
 }
 
-# 上传图片的类型
-ALLOWED_IMG_TYPE = ['jpg', 'png', 'PNG']
-
-# 上传图片的地址
-UPLOAD_ADDRESS = 'static/upload/'
-
-STATIC_URL = '/static/'
-# 配置静态文件夹
-
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]
+# # 上传图片的类型
+# ALLOWED_IMG_TYPE = ['jpg', 'png', 'PNG']
+#
+# # 上传图片的地址
+# UPLOAD_ADDRESS = 'static/upload/'
+#
+# STATIC_URL = '/static/'
+# # 配置静态文件夹
+#
+# STATICFILES_DIRS = [
+#     os.path.join(BASE_DIR, 'static'),
+# ]
 #
 # MEDIA_URL = '/media/'
 # MEDIA_ROOT = os.path.join(BASE_DIR/STATIC_URL, 'media')
