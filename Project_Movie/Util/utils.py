@@ -69,7 +69,7 @@ def paginate_success(code=None, message=None, data=None, total=0):
         'rows': data,  # 返回数据
     }, cls=JSONEncoder), 'application/json')
 
-# 分页页数问题
+# 分页页数设置
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'size'
