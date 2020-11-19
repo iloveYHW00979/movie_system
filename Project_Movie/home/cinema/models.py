@@ -1,15 +1,16 @@
 from django.db import models
 
 
+
 class Cinema(models.Model):
-    name = models.CharField(max_length=255, verbose_name=u'影院名称')
-    address = models.CharField(max_length=255, verbose_name=u'影院地址')
-    tel = models.CharField(max_length=255, verbose_name=u'影院电话')
-    icon = models.ImageField(verbose_name=u'影院图标', null=True)
-    cinema_brand = models.IntegerField(verbose_name=u'品牌')
-    administrative_district = models.IntegerField(verbose_name=u'行政区')
+    name = models.CharField(max_length=255, verbose_name=u'影院名称', null=True)
+    address = models.CharField(max_length=255, verbose_name=u'影院地址', null=True)
+    tel = models.CharField(max_length=255, verbose_name=u'影院电话', null=True)
+    icon = models.ImageField(upload_to='static/cinema', verbose_name=u'影院图标', null=True)
+    cinema_brand = models.IntegerField(verbose_name=u'品牌', null=True)
+    administrative_district = models.IntegerField(verbose_name=u'行政区', null=True)
     special_hall = models.IntegerField(verbose_name=u'特殊厅', null=True)
-    cinema_service = models.IntegerField(verbose_name=u'服务')
+    cinema_service = models.IntegerField(verbose_name=u'服务', null=True)
 
     class Meta:
         # abstract = True
@@ -28,6 +29,7 @@ class Viewing(models.Model):
     price = models.FloatField(verbose_name=u'电影单价', null=True)
     movie_id = models.IntegerField(verbose_name=u'电影id')
     date_time = models.DateTimeField(verbose_name=u'日期', null=True)
+    cinema_id = models.IntegerField(verbose_name='影院id', null=True)
 
     class Meta:
         # abstract = True
@@ -37,7 +39,7 @@ class Viewing(models.Model):
 
 class Seat(models.Model):
     view_id = models.IntegerField(verbose_name=u'场次id', null=True)
-    seat = models.CharField(max_length=255, verbose_name=u'座位', null=True)
+    seat = models.TextField(verbose_name=u'座位', null=True)
 
     class Meta:
         # abstract = True
@@ -45,7 +47,7 @@ class Seat(models.Model):
         verbose_name = u'影厅座位'
 
 class Order(models.Model):
-    order_num = models.IntegerField(verbose_name='订单号')
+    order_num = models.TextField(verbose_name='订单号')
     user_id = models.IntegerField(verbose_name='用户id')
     movie_id = models.IntegerField(verbose_name='电影id')
     cinema_id = models.IntegerField(verbose_name='影院id')

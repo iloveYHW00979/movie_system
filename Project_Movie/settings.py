@@ -155,10 +155,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 REST_FRAMEWORK = {
     # 4.分页（全局）：全局分页器, 例如 省市区的数据自定义分页器, 不需要分页
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     # 每页返回数量
     'PAGE_SIZE': 10,  # 默认 None
 }
+#
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR/STATIC_URL, 'media')

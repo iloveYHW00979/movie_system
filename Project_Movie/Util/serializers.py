@@ -8,16 +8,57 @@ from Project_Movie.home.user.models import User
 
 
 class CinemaSerializer(serializers.ModelSerializer):
+
+    cinema_brand_lable = serializers.SerializerMethodField()
+    administrative_district_lable = serializers.SerializerMethodField()
+    special_hall_lable = serializers.SerializerMethodField()
+    cinema_service_lable = serializers.SerializerMethodField()
+
     class Meta:
         model = Cinema
         fields = "__all__"
 
+    def get_cinema_brand_lable(self, obj):
+        cinema = obj
+        cinema_brand = SysDictData.objects.filter(dict_code=cinema.cinema_brand)[0].dict_label
+        return cinema_brand
+
+    def get_special_hall_lable(self, obj):
+        cinema = obj
+        special_hall = SysDictData.objects.filter(dict_code=cinema.special_hall)[0].dict_label
+        return special_hall
+
+    def get_administrative_district_lable(self, obj):
+        cinema = obj
+        administrative_district = SysDictData.objects.filter(dict_code=cinema.administrative_district)[0].dict_label
+        return administrative_district
+
+    def get_cinema_service_lable(self, obj):
+        cinema = obj
+        cinema_service = SysDictData.objects.filter(dict_code=cinema.cinema_service)[0].dict_label
+        return cinema_service
+
 
 class ViewingSerializer(serializers.ModelSerializer):
+
+    movie_info =  serializers.SerializerMethodField()
+    cinema_info = serializers.SerializerMethodField()
+
     class Meta:
         model = Viewing
         fields = "__all__"
 
+    def get_movie_info(self, obj):
+        view = obj
+        movie_id = Movies.objects.filter(id=view.movie_id)[0]
+        movie_info = MoviesSerializer(movie_id).data
+        return movie_info
+
+    def get_cinema_info(self, obj):
+        view = obj
+        cinema_id = Cinema.objects.filter(id=view.cinema_id)[0]
+        cinema_data = CinemaSerializer(cinema_id).data
+        return cinema_data
 
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,10 +67,17 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class SeatSerializer(serializers.ModelSerializer):
+    view_info = serializers.SerializerMethodField()
+
     class Meta:
         model = Seat
         fields = "__all__"
 
+    def get_view_info(self, obj):
+        seat = obj
+        view = Viewing.objects.filter(id=seat.view_id)[0]
+        view_info = ViewingSerializer(view).data
+        return view_info
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

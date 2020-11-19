@@ -78,6 +78,8 @@ class CinemaView(APIView):
                     serializer = CinemaSerializer(cinema, data=query_param)
                     if serializer.is_valid():
                         serializer.save()
+                    else:
+                        return response_failure('数据库更新失败')
             except:
                 raise
             return response_success(data=serializer.data)
@@ -157,10 +159,11 @@ class CinemaViewing(APIView):
                 else:
                     movie_id = query_params.get('movie_id')
                     date_time = query_params.get('date')
+                    cinema_id = query_params.get('cinema_id')
                     if movie_id and date_time:
                         view = Viewing.objects.filter(movie_id=movie_id, date_time=date_time)
                     elif movie_id:
-                        view = Viewing.objects.filter(movie_id=movie_id)
+                        view = Viewing.objects.filter(movie_id=movie_id, cinema_id=cinema_id)
                     else:
                         error_info = '请求失败，当前影院/电影不存在'
                         return response_failure(error_info)
@@ -246,7 +249,8 @@ class CinemaOrder(APIView):
         if query_params:
             view_id = query_params.get('view_id')
             seats = query_params.get('seat')
-            create_time = time.time()
+            # create_time = time.time()
+            create_time = query_params.get('create_time')
             user_id = query_params.get('user_id')
             movie_id = query_params.get('movie_id')
             cinema_id = query_params.get('cinema_id')
@@ -274,46 +278,42 @@ class CinemaOrder(APIView):
                                 db_seat[seat[0]][seat[1]] = 2
                             else:
                               return response_failure(message='当前位置已经被选定，请重新选座')
-                        # db_seats.seat = str(db_seat)
-                        str_seat = str(db_seat)
-                        data = {
-                            'view_id':view_id,
-                            'seat':str_seat
-                        }
-                        serializer = SeatSerializer(db_seats, data=data)
-                        # serializer = SeatSerializer(db_seats, data=request.data)
-                        if serializer.is_valid():
-                            serializer.save()
-                        else:
-                            return response_failure('更新座位信息失败')
+                        db_seats.seat = str(db_seat)
+                        # data = {
+                        #     "seat":str(db_seat)
+                        # }
+                        # serializer = SeatSerializer(db_seats, data=data)
+                        # if serializer.is_valid():
+                        #     serializer.save()
                     else:
                         return response_failure('该场次没有座位')
 
-                    # Order.objects.create(
-                    #     order_num=uuid.uuid4(),
-                    #     user_id=user_id,
-                    #     movie_id=movie_id,
-                    #     cinema_id=cinema_id,
-                    #     view_id=view_id,
-                    #     seat=seats,
-                    #     ticket_num=ticket_num,
-                    #     price=price,
-                    #     create_time=create_time,
-                    #     status=True
-                    # )
-                    # data = Order.objects.filter('order_num').first()
-                    # if data is None:
-                    #     return response_failure('获取订单编号失败')
-                    # serializer = OrderSerializer(data)
+                    order_info = Order.objects.create(
+                        order_num=uuid.uuid4(),
+                        user_id=user_id,
+                        movie_id=movie_id,
+                        cinema_id=cinema_id,
+                        view_id=view_id,
+                        seat=seats,
+                        ticket_num=ticket_num,
+                        price=price,
+                        create_time=create_time,
+                        status=True
+                    )
+                    db_seats.save()
+                    order_info.save()
+                    order = Order.objects.filter(create_time=create_time).first()
+                    if order.order_num is None:
+                        return response_failure('获取订单编号失败')
             except Exception as e:
                 raise e
-            return response_success(code=201, data=serializer.data)
+            return response_success(code=201,data=order.order_num)
     #  删除订单
     def delete(self, request):
         query_params = request.query_params
         if query_params:
             try:
-                order = Order.objects.get(id=query_params.get('id'))
+                order = Order.objects.filter(id=query_params.get('id')).first()
                 if order:
                     order.delete()
                     return response_success(code=200)
