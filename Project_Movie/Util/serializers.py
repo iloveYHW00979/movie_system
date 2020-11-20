@@ -193,11 +193,16 @@ class CommentSerializer(serializers.ModelSerializer):
     评论数据序列表类
     """
     # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
-    extra = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = "__all__"
+
+    def get_movie_info(self, obj):
+        comment = obj
+        movie = Movies.objects.filter(id=comment.movie_id)[0]
+        data = MoviesSerializer(movie).data
+        return data
 
     def get_extra(self, obj):
         """
