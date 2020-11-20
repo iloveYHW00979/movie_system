@@ -1,5 +1,6 @@
 from Project_Movie.home.cinema.models import Cinema, Viewing, Order, Seat
-from Project_Movie.home.movies.models import Movies, SysDictData, Cast, MovieImages, Comment
+from Project_Movie.home.movies.models import Movies, SysDictData, Cast, MovieImages, \
+    Comment, Favorite
 from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 from rest_framework import serializers
 import time
@@ -192,10 +193,21 @@ class CommentSerializer(serializers.ModelSerializer):
     评论数据序列表类
     """
     # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    extra = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = "__all__"
+
+    def get_extra(self, obj):
+        """
+        获取电影名称
+        :param obj: 当前comment的实例
+        :return: 当前电影名称
+        """
+        comment = obj
+        movie_name = Movies.objects.filter(id=comment.movie_id)[0].movie_name
+        return movie_name
 
 
 class MovieImagesSerializer(serializers.ModelSerializer):
@@ -205,6 +217,16 @@ class MovieImagesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MovieImages
+        fields = "__all__"
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """
+    收藏数据序列表类
+    """
+
+    class Meta:
+        model = Favorite
         fields = "__all__"
 
 

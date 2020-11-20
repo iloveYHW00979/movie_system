@@ -30,7 +30,7 @@ class InformationList(APIView):
         serializer = InformationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return response_success(code=201)
+            return response_success(code=200)
         return response_failure(code=400)
 
 
@@ -71,7 +71,6 @@ class InformationDetail(APIView):
         try:
             information = InformationManage.objects.get(id=information_id)
             information.delete()
-            information_img = InformationImg.objects.filter(information_id=information_id).all()
 
         except InformationManage.DoesNotExist:
             return response_failure(code=404)

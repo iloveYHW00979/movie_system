@@ -12,7 +12,7 @@ class Movies(models.Model):
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_name = models.CharField(max_length=32, verbose_name='电影名称', null=True)
     movie_score = models.FloatField(verbose_name='评分', null=True)
-    movie_poster = models.CharField(max_length=255, verbose_name='海报', null=True)
+    movie_poster = models.ImageField(upload_to='static/movie', verbose_name='海报', null=True)
     movie_type = models.IntegerField(verbose_name='类型（关联基础数据表）', null=True)
     movie_region = models.IntegerField(verbose_name='区域（关联基础数据表）', null=True)
     movie_duration = models.IntegerField(verbose_name='时长', null=True)
@@ -32,13 +32,14 @@ class Movies(models.Model):
 
 class Comment(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='评论id')
-    movie_id = models.IntegerField(verbose_name=u'电影id')
+    movie_id = models.IntegerField(verbose_name=u'电影id/资讯id')
     user_id = models.IntegerField(verbose_name=u'用户id')
     create_time = models.DateTimeField(verbose_name=u'创建时间', null=True, default=timezone.now)
     update_time = models.DateTimeField(verbose_name=u'更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name=u'删除时间', null=True)
     score = models.IntegerField(verbose_name=u'评分')
     content = models.TextField(null=True, verbose_name=u'评论')
+    comment_type = models.IntegerField(verbose_name=u'评论类型 0：电影/1：资讯)', null=True)
 
     class Meta:
         # abstract = True
@@ -54,7 +55,7 @@ class Cast(models.Model):
     update_time = models.DateTimeField(verbose_name='更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_id = models.IntegerField(verbose_name='电影id）')
-    cast_picture = models.CharField(max_length=255, verbose_name='人员图片', null=True)
+    cast_picture = models.ImageField(upload_to='static/movie', verbose_name='人员图片', null=True)
     cast_name = models.CharField(max_length=32, verbose_name='姓名', null=True)
     role = models.CharField(max_length=32, verbose_name='饰演角色', null=True)
     cast_type = models.IntegerField(verbose_name='人员类型（关联基础数据表）', null=True)
@@ -72,11 +73,24 @@ class MovieImages(models.Model):
     update_time = models.DateTimeField(verbose_name='更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name='删除时间', null=True)
     movie_id = models.CharField(max_length=128, verbose_name='电影id')
-    image = models.CharField(max_length=255, verbose_name='图片')
+    image = models.ImageField(upload_to='static/movie', verbose_name='图片')
 
     class Meta:
         db_table = 'movie_images'
         verbose_name = '电影图集'
+
+
+# 收藏夹
+class Favorite(models.Model):
+
+    id = models.AutoField(primary_key=True, verbose_name='id')
+    create_time = models.DateTimeField(verbose_name='创建时间', null=True, default=timezone.now)
+    movie_id = models.IntegerField(verbose_name='电影id')
+    user_id = models.IntegerField(verbose_name='用户id')
+
+    class Meta:
+        db_table = 'favorite'
+        verbose_name = '收藏夹'
 
 
 # 基础数据类型

@@ -1,12 +1,14 @@
 from django.http import HttpResponse, JsonResponse
 import json
+import re
 from Project_Movie.Util.utils import response_success, response_failure, paginate_success
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from Project_Movie.home.movies.models import Movies, SysDictData, Cast, \
-    MovieImages, Comment
+    MovieImages, Comment, Favorite
 from Project_Movie.Util.serializers import MoviesSerializer, \
-    SysDataSerializer, CastSerializer, CommentSerializer, MovieImagesSerializer
+    SysDataSerializer, CastSerializer, CommentSerializer, MovieImagesSerializer, \
+    FavoriteSerializer
 
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
@@ -64,7 +66,7 @@ class MovieList(APIView):
             serializer = MoviesSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
-                return response_success(code=201)
+                return response_success(code=200)
             return response_failure(code=400)
 
 
@@ -184,7 +186,7 @@ class CastList(APIView):
         serializer = CastSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return response_success(code=201)
+            return response_success(code=200)
         return response_failure(code=400)
 
 
@@ -196,10 +198,11 @@ class CommentList(APIView):
 
     def get(self, request):
         movie_id = request.GET.get('movie_id')
+        comment_type = request.GET.get('comment_type')
         if movie_id is None:
             return response_failure(code=400)
         try:
-            comment = Comment.objects.filter(movie_id=movie_id).all()
+            comment = Comment.objects.filter(movie_id=movie_id, comment_type=comment_type).all()
             serializer = CommentSerializer(comment, many=True)
         except Comment.DoesNotExist:
             return response_failure(code=404)
@@ -235,8 +238,48 @@ class CommentList(APIView):
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return response_success(code=201)
+            return response_success(code=200)
         return response_failure(code=400)
+
+
+def fuzzy_finder(key, data):
+    """
+    模糊查找器
+    :param key: 关键字
+    :param data: 数据
+    :return: list
+    """
+    # 结果列表
+    suggestions = []
+    # 非贪婪匹配，转换 'djm' 为 'd.*?j.*?m'
+    # pattern = '.*?'.join(key)
+    pattern = '.*%s.*'%(key)
+    # print("pattern",pattern)
+    # 编译正则表达式
+    regex = re.compile(pattern)
+    for item in data:
+        # print("item",item['name'])
+        # 检查当前项是否与regex匹配。
+        match = regex.search(item['name'])
+        if match:
+            # 如果匹配，就添加到列表中
+            suggestions.append(item)
+
+    return suggestions
+
+# 查询所有评论数据
+def get_all_comment(request):
+    key_word = request.GET.get('key_word')
+    kwargs = {}
+
+    if key_word is not None:
+        kwargs['extra__contains'] = key_word
+    try:
+        comment = Comment.objects.all()
+        serializer = CommentSerializer(comment, many=True)
+    except Comment.DoesNotExist:
+        return response_failure(code=404)
+    return response_success(code=200, data=serializer.data)
 
 
 class MovieImagesList(APIView):
@@ -286,7 +329,7 @@ class MovieImagesList(APIView):
         serializer = MovieImagesSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return response_success(code=201)
+            return response_success(code=200)
         return response_failure(code=400)
 
 
@@ -327,9 +370,50 @@ class RankList(APIView):
                 })
         except Movies.DoesNotExist:
             return response_failure(code=404)
+
+        # try:
+        #     # 热映口碑榜
+        #     score = Movies.objects.filter(movie_status=80).all() \
+        #         .order_by('-movie_score')[:10]
+        #     score_serializer = MoviesSerializer(score, many=True)
+        #     score_list = []
+        #     for index, score_item in enumerate(score_serializer.data):
+        #         score_list.append({
+        #             'rank': index + 1,
+        #             'movie_id': score_item['id'],
+        #             'movie_name': score_item['movie_name'],
+        #             'movie_score': score_item['movie_anticipate'],
+        #         })
+        # except Movies.DoesNotExist:
+        #     return response_failure(code=404)
+
         result = {
             'box_office_list': box_office_list,
             'anticipate_list': anticipate_list
         }
         return response_success(code=200, data=result)
 
+
+class FavoriteOperation(APIView):
+    """
+    想看和取消想看操作
+    """
+
+    def delete(self, request):
+        favorite_id = request.data.get('favorite_id')
+
+        if favorite_id is None:
+            return response_failure(code=400)
+        try:
+            favorite = Favorite.objects.get(id=favorite_id)
+            favorite.delete()
+        except Favorite.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200)
+
+    def post(self, request):
+        serializer = FavoriteSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response_success(code=200)
+        return response_failure(code=400)
