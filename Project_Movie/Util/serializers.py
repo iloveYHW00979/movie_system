@@ -193,6 +193,8 @@ class CommentSerializer(serializers.ModelSerializer):
     评论数据序列表类
     """
     # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    movie_info = serializers.SerializerMethodField()
+    extra = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
