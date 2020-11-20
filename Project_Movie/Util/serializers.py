@@ -5,11 +5,11 @@ from Project_Movie.home.information.models import InformationManage, Information
 from rest_framework import serializers
 import time
 
-from Project_Movie.home.user.models import User
+from Project_Movie.home.user.models import User, Purse
 
 
 class CinemaSerializer(serializers.ModelSerializer):
-
+    """影院序列表"""
     cinema_brand_lable = serializers.SerializerMethodField()
     administrative_district_lable = serializers.SerializerMethodField()
     special_hall_lable = serializers.SerializerMethodField()
@@ -41,7 +41,7 @@ class CinemaSerializer(serializers.ModelSerializer):
 
 
 class ViewingSerializer(serializers.ModelSerializer):
-
+    """场次序列表"""
     movie_info =  serializers.SerializerMethodField()
     cinema_info = serializers.SerializerMethodField()
 
@@ -62,7 +62,7 @@ class ViewingSerializer(serializers.ModelSerializer):
         return cinema_data
 
 class OrderSerializer(serializers.ModelSerializer):
-
+    """订单序列表"""
     # user_info = serializers.SerializerMethodField()
     # movie_info = serializers.SerializerMethodField()
     # cinema_info = serializers.SerializerMethodField()
@@ -97,6 +97,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return view_data
 
 class SeatSerializer(serializers.ModelSerializer):
+    """座位序列表"""
     view_info = serializers.SerializerMethodField()
 
     class Meta:
@@ -110,6 +111,7 @@ class SeatSerializer(serializers.ModelSerializer):
         return view_info
 
 class UserSerializer(serializers.ModelSerializer):
+    """用户序列表"""
     class Meta:
         model = User
         fields = "__all__"
@@ -231,11 +233,17 @@ class FavoriteSerializer(serializers.ModelSerializer):
     """
     收藏数据序列表类
     """
+    movie_info = serializers.SerializerMethodField()
 
     class Meta:
         model = Favorite
         fields = "__all__"
 
+    def get_movie_info(self, obj):
+        comment = obj
+        movie = Movies.objects.filter(id=comment.movie_id)[0]
+        data = MoviesSerializer(movie).data
+        return data
 
 class InformationSerializer(serializers.ModelSerializer):
     """
@@ -267,6 +275,12 @@ class AdvertisingSerializer(serializers.ModelSerializer):
         model = Advertising
         fields = "__all__"
 
+class PurseSerializer(serializers.ModelSerializer):
+    """用户钱包序列表"""
+
+    class Meta:
+        model = Purse
+        fields = "__all__"
 
 # #商品的反序列化
 # class GoodUnSerializer(serializers.Serializer):

@@ -20,9 +20,15 @@ class User(models.Model):
         db_table = 'user'
         verbose_name = '用户表'
 
+class Purse(models.Model):
+    """用户钱包表"""
+    id = models.AutoField(primary_key=True)
+    user_id = models.IntegerField(verbose_name='用户id',null=True)
+    overage = models.FloatField(verbose_name='余额', null=True)
 
-
-
+    class Meta:
+        db_table = 'purse'
+        verbose_name = '用户钱包'
 
 
 

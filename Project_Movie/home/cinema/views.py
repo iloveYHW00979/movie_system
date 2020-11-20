@@ -5,7 +5,7 @@ from django.db import transaction
 from django.http import HttpResponse, QueryDict
 from rest_framework.views import APIView
 from Project_Movie.Util.serializers import SysDataSerializer, CinemaSerializer, ViewingSerializer, OrderSerializer, \
-    SeatSerializer
+    SeatSerializer, PurseSerializer
 from Project_Movie.home.cinema.models import *
 import json
 from Project_Movie.Util.utils import response_success, response_failure, paginate_success, CustomPageNumberPagination
@@ -13,6 +13,9 @@ from Project_Movie.home.movies.models import SysDictData
 from rest_framework.pagination import PageNumberPagination
 
 # 操作影院信息
+from Project_Movie.home.user.models import Purse
+
+
 class CinemaView(APIView):
     # 获取某个属性下的影院信息
     def get(self, request):
@@ -175,7 +178,7 @@ class CinemaViewing(APIView):
                     if movie_id and date_time and cinema_id:
                         view = Viewing.objects.filter(movie_id=movie_id, date_time=date_time, cinema_id=cinema_id)
                     elif movie_id:
-                        view = Viewing.objects.filter(movie_id=movie_id, cinema_id=cinema_id)
+                        view = Viewing.objects.filter(movie_id=movie_id, cinema_id=cinema_id).order_by('view_start_time')
                     else:
                         error_info = '请求失败，当前影院/电影不存在'
                         return response_failure(error_info)
@@ -284,9 +287,6 @@ class CinemaOrder(APIView):
                         return response_failure(message='场次不存在')
                 else:
                     return response_failure(message='请输入正确的场次')
-
-                # if time > time.strptime(view_info.view_start_time):
-                #     return response_failure(message='该场次已上映')
                 # 获取座位信息
                 db_seats = Seat.objects.filter(view_id=view_id).first()
                 with transaction.atomic():
@@ -302,6 +302,21 @@ class CinemaOrder(APIView):
                         db_seats.seat = str(db_seat)
                     else:
                         return response_failure('该场次没有座位')
+                    # 用户钱包减掉余额
+                    purse = Purse.objects.filter(user_id=user_id).first()
+                    if purse:
+                        if float(price) > purse.overage:
+                            return response_failure('用户当前余额不够支付该订单')
+                        else:
+                            overage = purse.overage - float(price)
+                            data = {
+                                "overage":overage
+                            }
+                            serializer = PurseSerializer(purse, data=data)
+                            if serializer.is_valid() is False:
+                                return response_failure('数据库存储失败')
+                    else:
+                        return response_failure('当前用户没有充值的余额记录')
 
                     order_info = Order.objects.create(
                         order_num=uuid.uuid4(),
@@ -317,6 +332,7 @@ class CinemaOrder(APIView):
                     )
                     db_seats.save()
                     order_info.save()
+                    serializer.save()
                     order = Order.objects.filter(create_time=create_time).first()
                     if order.order_num is None:
                         return response_failure('获取订单编号失败')

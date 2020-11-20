@@ -1,10 +1,10 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from rest_framework.views import APIView
 
-from Project_Movie.Util.serializers import UserSerializer, CommentSerializer
+from Project_Movie.Util.serializers import UserSerializer, CommentSerializer, PurseSerializer, FavoriteSerializer
 from Project_Movie.Util.utils import response_failure, response_success, CustomPageNumberPagination, paginate_success
 from Project_Movie.home.cinema.models import Order
-from Project_Movie.home.movies.models import Comment
+from Project_Movie.home.movies.models import Comment, Favorite
 from Project_Movie.home.user.models import *
 
 class UserInfoView(APIView):
@@ -64,12 +64,64 @@ class UserInfoView(APIView):
             except:
                 return response_failure('数据库操作错误:没有该用户')
 
-class UserOrderView(APIView):
+class UserPurseView(APIView):
 
     def get(self, request):
-        """进入用户订单界面"""
-        pass
+        """获取我的钱包余额"""
+        user_id =  request.query_params.get('user_id')
+        if user_id:
+            try:
+                data = Purse.objects.filter(user_id=user_id)
+            except:
+                raise
+            if data:
+                serializer = PurseSerializer(data)
+            else:
+                return response_failure('没有该用户的余额信息')
+        else:
+            return response_failure('请输入用户id')
+        return response_success(code=200,data=serializer.data)
 
+    def post(self, request):
+        """充值余额"""
+        user_id = request.data.get('user_id')
+        overage = request.data.get('overage')
+        if user_id and overage:
+            try:
+                user = User.objects.filter(id=user_id)
+            except:
+                raise
+            if user:
+                serializer = PurseSerializer(data=request.data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return response_failure('数据存储失败')
+            else:
+                return response_failure('没有该用户信息')
+            return response_success(code=201, data=serializer.data)
+
+    def put(self, request):
+        user_id = request.data.get('user_id')
+        overage = request.data.get('overage')
+        if user_id and overage:
+            try:
+                purse = Purse.objects.filter(user_id=user_id).first()
+            except:
+                raise
+            if purse:
+                overage = float(overage) + purse.overage
+                data = {
+                    "overage":overage
+                }
+                serializer = PurseSerializer(purse, data=data)
+                if serializer.is_valid():
+                    serializer.save()
+                else:
+                    return response_failure('数据库更新失败')
+            else:
+                return response_failure('没有该用户的余额信息')
+            return response_success(code=200, data=serializer.data)
 
 class UserCommentView(APIView):
     def get(self, request):
@@ -90,3 +142,22 @@ class UserCommentView(APIView):
                 return paginate_success(code=200, data=serializer.data, total=data.count())
             else:
                 return response_failure('当前用户没有对应评论')
+
+class UserCollectView(APIView):
+    """用户收藏列表"""
+    def get(self, request):
+        user_id = request.query_params.get('user_id')
+        if user_id:
+            try:
+                collect = Favorite.objects.filter(user_id=user_id)
+            except:
+                raise
+            if collect:
+                # 创建分页对象
+                page_order = CustomPageNumberPagination().paginate_queryset(queryset=collect, request=request, view=self)  # 获取分页的数据
+                serializer = FavoriteSerializer(page_order, many=True)
+                return paginate_success(code=200, data=serializer.data, total=collect.count())
+            else:
+                return response_failure('当前用户收藏电影')
+        else:
+            return response_failure('请输入要查询的用户id')
