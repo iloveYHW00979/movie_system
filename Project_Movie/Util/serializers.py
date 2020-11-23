@@ -42,7 +42,7 @@ class CinemaSerializer(serializers.ModelSerializer):
 
 class ViewingSerializer(serializers.ModelSerializer):
     """场次序列表"""
-    movie_info =  serializers.SerializerMethodField()
+    movie_info = serializers.SerializerMethodField()
     cinema_info = serializers.SerializerMethodField()
 
     class Meta:
@@ -60,6 +60,7 @@ class ViewingSerializer(serializers.ModelSerializer):
         cinema_id = Cinema.objects.filter(id=view.cinema_id)[0]
         cinema_data = CinemaSerializer(cinema_id).data
         return cinema_data
+
 
 class OrderSerializer(serializers.ModelSerializer):
     """订单序列表"""
@@ -96,6 +97,7 @@ class OrderSerializer(serializers.ModelSerializer):
         view_data = ViewingSerializer(view_id).data
         return view_data
 
+
 class SeatSerializer(serializers.ModelSerializer):
     """座位序列表"""
     view_info = serializers.SerializerMethodField()
@@ -110,8 +112,10 @@ class SeatSerializer(serializers.ModelSerializer):
         view_info = ViewingSerializer(view).data
         return view_info
 
+
 class UserSerializer(serializers.ModelSerializer):
     """用户序列表"""
+
     class Meta:
         model = User
         fields = "__all__"
@@ -194,29 +198,19 @@ class CommentSerializer(serializers.ModelSerializer):
     """
     评论数据序列表类
     """
-    # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     movie_info = serializers.SerializerMethodField()
-    extra = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
         fields = "__all__"
 
     def get_movie_info(self, obj):
+        data = []
         comment = obj
-        movie = Movies.objects.filter(id=comment.movie_id)[0]
-        data = MoviesSerializer(movie).data
+        if comment.comment_type == 0:
+            movie = Movies.objects.filter(id=comment.movie_id)[0]
+            data = MoviesSerializer(movie).data
         return data
-
-    def get_extra(self, obj):
-        """
-        获取电影名称
-        :param obj: 当前comment的实例
-        :return: 当前电影名称
-        """
-        comment = obj
-        movie_name = Movies.objects.filter(id=comment.movie_id)[0].movie_name
-        return movie_name
 
 
 class MovieImagesSerializer(serializers.ModelSerializer):
@@ -245,10 +239,12 @@ class FavoriteSerializer(serializers.ModelSerializer):
         data = MoviesSerializer(movie).data
         return data
 
+
 class InformationSerializer(serializers.ModelSerializer):
     """
     资讯数据序列表类
     """
+
     # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
 
     class Meta:
@@ -274,6 +270,7 @@ class AdvertisingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advertising
         fields = "__all__"
+
 
 class PurseSerializer(serializers.ModelSerializer):
     """用户钱包序列表"""

@@ -33,6 +33,7 @@ class Movies(models.Model):
 class Comment(models.Model):
     id = models.AutoField(primary_key=True, verbose_name='评论id')
     movie_id = models.IntegerField(verbose_name=u'电影id/资讯id')
+    movie_name = models.CharField(max_length=32, verbose_name='电影名称', null=True)
     user_id = models.IntegerField(verbose_name=u'用户id')
     create_time = models.DateTimeField(verbose_name=u'创建时间', null=True, default=timezone.now)
     update_time = models.DateTimeField(verbose_name=u'更新时间', null=True, default=timezone.now)

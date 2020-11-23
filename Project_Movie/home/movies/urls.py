@@ -11,5 +11,7 @@ urlpatterns = {
     path('movie_images/', views.MovieImagesList.as_view()),
     path('rank_list/', views.RankList.as_view()),
     path('favorite/', views.FavoriteOperation.as_view()),
-    path('all_comment/', views.get_all_comment)
+    path('all_comment/', views.AllComment.as_view()),
+    path('showing_list/', views.ShowingList.as_view()),
+    path('anticipate_list/', views.AnticipateList.as_view()),
 }

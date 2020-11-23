@@ -1,7 +1,9 @@
+from django.db import connection
 from django.http import HttpResponse, JsonResponse
 import json
 import re
-from Project_Movie.Util.utils import response_success, response_failure, paginate_success
+from Project_Movie.Util.utils import response_success, response_failure, paginate_success, \
+    CustomPageNumberPagination
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 
 from Project_Movie.home.movies.models import Movies, SysDictData, Cast, \
@@ -12,11 +14,6 @@ from Project_Movie.Util.serializers import MoviesSerializer, \
 
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
-
-
-class CustomPageNumberPagination(PageNumberPagination):
-    page_size = 10
-    page_size_query_param = 'size'
 
 
 class MovieList(APIView):
@@ -31,6 +28,10 @@ class MovieList(APIView):
         movie_status = request.GET.get('movie_status')  # 状态
         movie_sort = request.GET.get('movie_sort')  # 排序 0:按热门排序/1：按时间排序/2：按评价排序
         movie_sort = int(movie_sort) if movie_sort is not None else 0
+
+        # dict_status = SysDictData.objects.filter(dict_code=movie_status)[0].dict_sort
+        # if dict_status is :
+
         sort_list = ['-movie_hot', '-movie_release_date', '-movie_score']
         key_word = request.GET.get('key_word')
         kwargs = {}
@@ -202,7 +203,9 @@ class CommentList(APIView):
         if movie_id is None:
             return response_failure(code=400)
         try:
-            comment = Comment.objects.filter(movie_id=movie_id, comment_type=comment_type).all()
+
+            kwargs = {"movie_id": movie_id, "comment_type": comment_type}
+            comment = Comment.objects.filter(**kwargs).all()
             serializer = CommentSerializer(comment, many=True)
         except Comment.DoesNotExist:
             return response_failure(code=404)
@@ -242,44 +245,56 @@ class CommentList(APIView):
         return response_failure(code=400)
 
 
-def fuzzy_finder(key, data):
+# def fuzzy_finder(key, data):
+#     """
+#     模糊查找器
+#     :param key: 关键字
+#     :param data: 数据
+#     :return: list
+#     """
+#     # 结果列表
+#     suggestions = []
+#     # 非贪婪匹配，转换 'djm' 为 'd.*?j.*?m'
+#     # pattern = '.*?'.join(key)
+#     pattern = '.*%s.*'%(key)
+#     # print("pattern",pattern)
+#     # 编译正则表达式
+#     regex = re.compile(pattern)
+#     for item in data:
+#         # print("item",item['name'])
+#         # 检查当前项是否与regex匹配。
+#         match = regex.search(item['movie_name'])
+#         if match:
+#             # 如果匹配，就添加到列表中
+#             suggestions.append(item)
+#
+#     return suggestions
+
+
+class AllComment(APIView):
     """
-    模糊查找器
-    :param key: 关键字
-    :param data: 数据
-    :return: list
+    根据movie_id检索评论或者创建一个新的评论。
+    根据comment_id修改或者删除评论。
     """
-    # 结果列表
-    suggestions = []
-    # 非贪婪匹配，转换 'djm' 为 'd.*?j.*?m'
-    # pattern = '.*?'.join(key)
-    pattern = '.*%s.*'%(key)
-    # print("pattern",pattern)
-    # 编译正则表达式
-    regex = re.compile(pattern)
-    for item in data:
-        # print("item",item['name'])
-        # 检查当前项是否与regex匹配。
-        match = regex.search(item['name'])
-        if match:
-            # 如果匹配，就添加到列表中
-            suggestions.append(item)
 
-    return suggestions
+    def get(self, request):
+        key_word = request.GET.get('key_word')
+        kwargs = {}
 
-# 查询所有评论数据
-def get_all_comment(request):
-    key_word = request.GET.get('key_word')
-    kwargs = {}
+        if key_word is not None:
+            kwargs['movie_name__contains'] = key_word
 
-    if key_word is not None:
-        kwargs['extra__contains'] = key_word
-    try:
-        comment = Comment.objects.all()
-        serializer = CommentSerializer(comment, many=True)
-    except Comment.DoesNotExist:
-        return response_failure(code=404)
-    return response_success(code=200, data=serializer.data)
+        try:
+            comment = Comment.objects.filter(**kwargs).all()
+            total = comment.count()
+
+            pg = CustomPageNumberPagination()  # 创建分页对象
+            page_comment = pg.paginate_queryset(queryset=comment, request=request, view=self)  # 获取分页的数据
+            serializer = CommentSerializer(page_comment, many=True)
+
+        except comment.DoesNotExist:
+            return response_failure(code=404)
+        return paginate_success(code=200, data=serializer.data, total=total)
 
 
 class MovieImagesList(APIView):
@@ -342,12 +357,12 @@ class RankList(APIView):
         try:
             # 今日票房排行
             box_office = Movies.objects.filter(movie_status=80).all() \
-                .order_by('-movie_box_office')[:10]
+                             .order_by('-movie_box_office')[:10]
             box_office_serializer = MoviesSerializer(box_office, many=True)
             box_office_list = []
             for index, box_office_item in enumerate(box_office_serializer.data):
                 box_office_list.append({
-                    'rank': index+1,
+                    'rank': index + 1,
                     'movie_id': box_office_item['id'],
                     'movie_name': box_office_item['movie_name'],
                     'movie_box_office': box_office_item['movie_box_office'],
@@ -358,7 +373,7 @@ class RankList(APIView):
         try:
             # 最受期待排行
             anticipate = Movies.objects.filter(movie_status=81).all() \
-                .order_by('-movie_anticipate')[:10]
+                             .order_by('-movie_anticipate')[:10]
             anticipate_serializer = MoviesSerializer(anticipate, many=True)
             anticipate_list = []
             for index, anticipate_item in enumerate(anticipate_serializer.data):
@@ -370,22 +385,6 @@ class RankList(APIView):
                 })
         except Movies.DoesNotExist:
             return response_failure(code=404)
-
-        # try:
-        #     # 热映口碑榜
-        #     score = Movies.objects.filter(movie_status=80).all() \
-        #         .order_by('-movie_score')[:10]
-        #     score_serializer = MoviesSerializer(score, many=True)
-        #     score_list = []
-        #     for index, score_item in enumerate(score_serializer.data):
-        #         score_list.append({
-        #             'rank': index + 1,
-        #             'movie_id': score_item['id'],
-        #             'movie_name': score_item['movie_name'],
-        #             'movie_score': score_item['movie_anticipate'],
-        #         })
-        # except Movies.DoesNotExist:
-        #     return response_failure(code=404)
 
         result = {
             'box_office_list': box_office_list,
@@ -417,3 +416,42 @@ class FavoriteOperation(APIView):
             serializer.save()
             return response_success(code=200)
         return response_failure(code=400)
+
+
+class ShowingList(APIView):
+    """
+    热映口碑榜/国内票房榜
+    """
+
+    def get(self, request):
+        select_type = request.data.get('select_type')  # 选择类型 0：热映口碑榜/1：国内票房榜
+        try:
+            movie = Movies.objects.filter(movie_status=80).all()
+            if select_type == 0:
+                result_data = movie.order_by('-movie_score')[:10]
+            elif select_type == 1:
+                result_data = movie.order_by('-movie_box_office')[:10]
+            else:
+                return response_failure(code=400)
+            serializer = MoviesSerializer(result_data, many=True)
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200, data=serializer.data)
+
+
+class AnticipateList(APIView):
+    """
+    最受期待榜
+    """
+
+    def get(self, request):
+        try:
+            anticipate = Movies.objects.filter(movie_status=81).all().order_by('-movie_anticipate')
+            total = anticipate.count()
+
+            pg = CustomPageNumberPagination()  # 创建分页对象
+            page_anticipate = pg.paginate_queryset(queryset=anticipate, request=request, view=self)  # 获取分页的数据
+            serializer = MoviesSerializer(page_anticipate, many=True)
+        except Movies.DoesNotExist:
+            return response_failure(code=404)
+        return paginate_success(code=200, data=serializer.data, total=total)

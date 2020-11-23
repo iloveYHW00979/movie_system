@@ -1,7 +1,7 @@
 from django.http import HttpResponse, JsonResponse
 import json
 from Project_Movie.Util.utils import response_success, response_failure, \
-    paginate_success
+    paginate_success, CustomPageNumberPagination
 from Project_Movie.Util.serializers import InformationSerializer, InformationImgSerializer, AdvertisingSerializer
 from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 
@@ -19,7 +19,7 @@ class InformationList(APIView):
             information = InformationManage.objects.all()
             total = information.count()
 
-            pg = PageNumberPagination()  # 创建分页对象
+            pg = CustomPageNumberPagination()  # 创建分页对象
             page_information = pg.paginate_queryset(queryset=information, request=request, view=self)  # 获取分页的数据
             serializer = InformationSerializer(page_information, many=True)
         except InformationManage.DoesNotExist:
