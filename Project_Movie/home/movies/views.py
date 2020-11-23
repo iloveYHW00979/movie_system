@@ -28,11 +28,6 @@ class MovieList(APIView):
         movie_status = request.GET.get('movie_status')  # 状态
         movie_sort = request.GET.get('movie_sort')  # 排序 0:按热门排序/1：按时间排序/2：按评价排序
         movie_sort = int(movie_sort) if movie_sort is not None else 0
-
-        # dict_status = SysDictData.objects.filter(dict_code=movie_status)[0].dict_sort
-        # if dict_status is :
-
-        sort_list = ['-movie_hot', '-movie_release_date', '-movie_score']
         key_word = request.GET.get('key_word')
         kwargs = {}
 
@@ -42,15 +37,30 @@ class MovieList(APIView):
             kwargs['movie_region'] = movie_region
         if movie_era is not None:
             kwargs['movie_era'] = movie_era
+
+        '''
+        没有状态参数：根据上映时间倒序排序
+        有状态参数：判断是否上映
+        待上映电影根据热度和上映时间排序，热度依据为想看数
+        上映电影根据热度、上映时间和评分排序，热度依据为票房
+        '''
         if movie_status is not None:
+            # 判断电影状态
+            dict_status = SysDictData.objects.filter(dict_code=movie_status)[0].dict_sort
+            if dict_status == 1:
+                sort_list = ['-movie_anticipate', '-movie_release_date']
+            else:
+                sort_list = ['-movie_box_office', '-movie_release_date', '-movie_score']
             kwargs['movie_status'] = movie_status
+        else:
+            movie_sort = 0
+            sort_list = ['-movie_release_date']
+
         if key_word is not None:
             kwargs['movie_name__contains'] = key_word
-
         try:
             movies = Movies.objects.filter(**kwargs).all().order_by(sort_list[movie_sort])
             total = movies.count()
-
             pg = CustomPageNumberPagination()  # 创建分页对象
             page_movies = pg.paginate_queryset(queryset=movies, request=request, view=self)  # 获取分页的数据
             serializer = MoviesSerializer(page_movies, many=True)
