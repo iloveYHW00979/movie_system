@@ -124,6 +124,7 @@ class UserPurseView(APIView):
             return response_success(code=200, data=serializer.data)
 
 class UserCommentView(APIView):
+    """获取用户评论"""
     def get(self, request):
         query_params = request.query_params
         user_id = query_params.get('user_id')
