@@ -120,15 +120,16 @@ class CinemaDetail(APIView):
         query_params = request.query_params
         if isinstance(query_params, QueryDict):
             cinema_id = query_params.get('id')
-            try:
-                cinema_info = Cinema.objects.filter(id=cinema_id).first()
-            except Exception as e:
-                raise e
-            if cinema_info:
-                serializer = CinemaSerializer(cinema_info)
-                return response_success(code=200, data=serializer.data)
-            else:
-                return response_failure('该影片不存在')
+            if cinema_id:
+                try:
+                    cinema_info = Cinema.objects.filter(id=cinema_id).first()
+                except Exception as e:
+                    raise e
+                if cinema_info:
+                    serializer = CinemaSerializer(cinema_info)
+                    return response_success(code=200, data=serializer.data)
+                else:
+                    return response_failure('该影片不存在')
 
 # 获取所有影院属性
 class AttributeView(APIView):
@@ -248,25 +249,31 @@ class CinemaOrder(APIView):
         query_params = request.query_params
         user_id = query_params.get('user_id')
         order_num = query_params.get('order_num')
-        if query_params:
-            try:
+        try:
+            if query_params:
                 if user_id and order_num:
                     # 查询该用户的某个订单信息
                     order_info = Order.objects.filter(user_id=user_id, order_num=order_num)
                 elif user_id:
                     # 查询该用户的所有订单信息
                     order_info = Order.objects.filter(user_id = user_id).order_by('id')
+                elif order_num:
+                    # 查询某个订单
+                    order_info = Order.objects.filter(order_num=order_num).order_by('id')
                 else:
                     return response_failure('当前没有用户登录')
-                if order_info:
-                    # 创建分页对象
-                    page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
-                    serializer = OrderSerializer(page_order, many=True)
-                else:
-                    return response_failure('该用户没有订单信息')
-            except:
-                raise
-            return paginate_success(code=200, data=serializer.data, total=order_info.count())
+            else:
+                # 查询所有订单
+                order_info = Order.objects.all()
+            if order_info:
+                # 创建分页对象
+                page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
+                serializer = OrderSerializer(page_order, many=True)
+            else:
+                return response_failure('该用户没有订单信息')
+        except:
+            raise
+        return paginate_success(code=200, data=serializer.data, total=order_info.count())
     # 创建订单
     def post(self, request):
         query_params = request.data
@@ -298,7 +305,7 @@ class CinemaOrder(APIView):
                             if cur_seat == 1:
                                 db_seat[seat[0]][seat[1]] = 2
                             else:
-                              return response_failure(message='当前位置已经被选定，请重新选座')
+                              return response_failure('当前位置已经被选定，请重新选座')
                         db_seats.seat = str(db_seat)
                     else:
                         return response_failure('该场次没有座位')
@@ -317,9 +324,9 @@ class CinemaOrder(APIView):
                                 return response_failure('数据库存储失败')
                     else:
                         return response_failure('当前用户没有充值的余额记录')
-
+                    order_no = str(time.strftime('%Y%m%d%H%M%S', time.localtime(time.time()))) + str(time.time()).replace('.', '')[-7:]
                     order_info = Order.objects.create(
-                        order_num=uuid.uuid4(),
+                        order_num=order_no,
                         user_id=user_id,
                         movie_id=movie_id,
                         cinema_id=cinema_id,
@@ -349,7 +356,7 @@ class CinemaOrder(APIView):
                     order.delete()
                     return response_success(code=200)
                 else:
-                    response_failure('没有该订单信息')
+                    return response_failure('没有该订单信息')
             except:
                 raise
 
@@ -387,3 +394,14 @@ class SearchView(APIView):
                 return paginate_success(code=200, data=serializer.data, total=cinema.count())
             else:
                 return response_failure('当前没有该影院名称')
+
+class AllViewings(APIView):
+    """查询某个影院下所有的场次信息"""
+    def get(self, request):
+        cinema_id = request.query_params.get('cinema_id')
+        try:
+            view = Viewing.objects.filter(cinema_id=cinema_id).values()
+
+        except:
+            raise
+        return response_success(code=200, data=list(view))

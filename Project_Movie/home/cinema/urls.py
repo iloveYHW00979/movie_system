@@ -8,5 +8,7 @@ urlpatterns = [
     path('view/', views.CinemaViewing.as_view()),
     path('order/', views.CinemaOrder.as_view()),
     path('seat/', views.SeatView.as_view()),
-    path('search/', views.SearchView.as_view())
+    path('search/', views.SearchView.as_view()),
+    path('allView/', views.AllViewings.as_view())
+
 ]

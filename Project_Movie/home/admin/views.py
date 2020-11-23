@@ -13,7 +13,7 @@ class RegisterView(APIView):
         user_name = query_params.get('user_name')
         password = query_params.get('password')
         password2 = query_params.get('password2')
-        e_mail = query_params.get('e_mail')
+        # e_mail = query_params.get('e_mail')
 
         # - 校验数据合法性
         # 所有的参数都不为空时,all方法才会返回True
@@ -23,8 +23,8 @@ class RegisterView(APIView):
         if password != password2:
             return response_failure('两次输入的密码不一致')
 
-        if not re.match('^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', e_mail):
-            return response_failure('邮箱格式不正确')
+        # if not re.match('^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', e_mail):
+        #     return response_failure('邮箱格式不正确')
 
         try:
             user_info = User.objects.filter(user_name=user_name)
@@ -44,6 +44,7 @@ class LoginView(APIView):
         """处理登录逻辑"""
 
         # 获取登录请求参数
+
         query_params = request.data
         user_name = query_params.get('user_name')
         password = query_params.get('password')

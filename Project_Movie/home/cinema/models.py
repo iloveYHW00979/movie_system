@@ -23,6 +23,7 @@ class Viewing(models.Model):
     movie_id = models.IntegerField(verbose_name=u'电影id')
     date_time = models.DateTimeField(verbose_name=u'日期', null=True)
     cinema_id = models.IntegerField(verbose_name='影院id', null=True)
+    movie_name = models.CharField(max_length=256, verbose_name='电影名称', null=True)
     class Meta:
         # abstract = True
         db_table = 'viewing'
