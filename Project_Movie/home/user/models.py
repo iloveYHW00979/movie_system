@@ -14,7 +14,7 @@ class User(models.Model):
     e_mail= models.CharField(max_length=256, verbose_name=u'邮箱', null=True)
     address = models.CharField(max_length=256, verbose_name=u'地址', null=True)
     sign = models.CharField(max_length=256, verbose_name=u'签名', null=True)
-    icon = models.ImageField(verbose_name='头像', null=True)
+    icon = models.ImageField(upload_to='static/user', verbose_name='头像', null=True)
 
 
     class Meta:
