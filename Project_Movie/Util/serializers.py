@@ -205,11 +205,13 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     def get_movie_info(self, obj):
-        data = []
         comment = obj
         if comment.comment_type == 0:
             movie = Movies.objects.filter(id=comment.movie_id)[0]
             data = MoviesSerializer(movie).data
+        else:
+            info = InformationManage.objects.filter(id=comment.movie_id)[0]
+            data = InformationSerializer(info).data
         return data
 
 

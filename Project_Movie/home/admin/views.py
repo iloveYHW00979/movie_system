@@ -54,7 +54,10 @@ class LoginView(APIView):
         try:
             user_info = User.objects.filter(user_name=user_name).first()
             if user_info:
-               return response_success(code=200, data=UserSerializer(user_info).data)
+                if user_info.password != password:
+                    return response_failure('登陆密码错误')
+                return response_success(code=200, data=UserSerializer(user_info).data)
+
             else:
                 return response_failure('该用户不存在')
         except:
