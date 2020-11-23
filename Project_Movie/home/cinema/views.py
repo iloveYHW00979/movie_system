@@ -96,7 +96,7 @@ class CinemaView(APIView):
                         return response_failure('数据库更新失败')
             except:
                 raise
-            return response_success(data=serializer.data)
+            return response_success(code=200)
 
     def delete(self, request):
         # 删除影院

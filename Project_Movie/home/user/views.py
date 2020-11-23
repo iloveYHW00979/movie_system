@@ -14,23 +14,18 @@ class UserInfoView(APIView):
         user_id = request.query_params.get('id')  # 登录用户
         try:
             if user_id:
-                user = User.objects.filter(id=user_id).first()
-                if user:
-                    serializer = UserSerializer(user)
-                    data = serializer.data
-                    if user.user_name == 'admin':
-                        data = {
-                            "roles":['admin'],
-                            "data":serializer.data
-                        }
-                else:
+                data = User.objects.filter(id=user_id).order_by('id')
+                if len(data) == 0:
                     return response_failure('没有该id的用户')
             else:
-                user_info = User.objects.all()
-                data = UserSerializer(user_info, many=True).data
+                data = User.objects.all().order_by('id')
         except Exception as e:
             raise e
-        return response_success(code=200, data=data)
+        if data:
+            # 创建分页对象
+            page_order = CustomPageNumberPagination().paginate_queryset(queryset=data, request=request,                                                             view=self)  # 获取分页的数据
+            serializer = UserSerializer(page_order, many=True)
+            return paginate_success(code=200, data=serializer.data, total=data.count())
 
     def put(self, request):
         """更新用户信息"""
