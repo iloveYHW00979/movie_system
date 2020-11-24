@@ -40,6 +40,8 @@ class UserInfoView(APIView):
                 serializer = UserSerializer(user_info, request.data)
                 if serializer.is_valid():
                     serializer.save()
+                else:
+                    return response_failure('保存数据失败')
             else:
                 return response_failure('没有该用户id')
         except Exception as e:
@@ -48,7 +50,7 @@ class UserInfoView(APIView):
 
     def delete(self, request):
         """删除用户信息"""
-        user_id = request.data.get('id')
+        user_id = request.query_params.get('id')
         if user_id:
             try:
                 user_info = User.objects.filter(id=user_id)
@@ -149,7 +151,7 @@ class UserCollectView(APIView):
         user_id = request.query_params.get('user_id')
         if user_id:
             try:
-                collect = Favorite.objects.filter(user_id=user_id)
+                collect = Favorite.objects.filter(user_id=user_id).order_by('id')
             except:
                 raise
             if collect:

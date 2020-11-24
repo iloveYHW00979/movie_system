@@ -213,7 +213,7 @@ class CinemaViewing(APIView):
         query_param = request.data
         if query_param:
             try:
-                view = Viewing.objects.get(id=query_param.get('view_id'))
+                view = Viewing.objects.get(id=query_param.get('id'))
                 if view is None:
                     return response_failure(code=404, message='该场次不存在')
                 else:
@@ -224,7 +224,7 @@ class CinemaViewing(APIView):
                         return response_failure('存储到数据库失败')
             except:
                 raise
-            return response_success(data=serializer.data)
+            return response_success(code=200, data=serializer.data)
 
     #  删除场次
     def delete(self, request):
@@ -400,8 +400,11 @@ class AllViewings(APIView):
     def get(self, request):
         cinema_id = request.query_params.get('cinema_id')
         try:
-            view = Viewing.objects.filter(cinema_id=cinema_id).values()
-
+            view = Viewing.objects.filter(cinema_id=cinema_id).values().order_by('id')
+            page_order = CustomPageNumberPagination().paginate_queryset(queryset=view, request=request, view = self)  # 获取分页的数据
         except:
             raise
-        return response_success(code=200, data=list(view))
+        return paginate_success(code=200, data=list(page_order), total=view.count())
+
+
+        # return response_success(code=200, data=list(view))
