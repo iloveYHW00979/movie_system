@@ -213,7 +213,6 @@ class CommentList(APIView):
         if movie_id is None:
             return response_failure(code=400)
         try:
-
             kwargs = {"movie_id": movie_id, "comment_type": comment_type}
             comment = Comment.objects.filter(**kwargs).all()
             serializer = CommentSerializer(comment, many=True)
@@ -278,7 +277,7 @@ class CommentList(APIView):
 #             # 如果匹配，就添加到列表中
 #             suggestions.append(item)
 #
-#     return suggestions
+#     return
 
 
 class AllComment(APIView):
@@ -434,15 +433,16 @@ class ShowingList(APIView):
     """
 
     def get(self, request):
-        select_type = request.data.get('select_type')  # 选择类型 0：热映口碑榜/1：国内票房榜
+        select_type = request.GET.get('select_type')  # 选择类型 0：热映口碑榜/1：国内票房榜
+        if select_type is None:
+            return response_failure(code=400)
         try:
             movie = Movies.objects.filter(movie_status=80).all()
-            if select_type == 0:
+            if int(select_type) == 0:
                 result_data = movie.order_by('-movie_score')[:10]
-            elif select_type == 1:
+            elif int(select_type) == 1:
                 result_data = movie.order_by('-movie_box_office')[:10]
-            else:
-                return response_failure(code=400)
+
             serializer = MoviesSerializer(result_data, many=True)
         except Movies.DoesNotExist:
             return response_failure(code=404)

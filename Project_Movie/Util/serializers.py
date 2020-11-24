@@ -129,9 +129,10 @@ class MoviesSerializer(serializers.ModelSerializer):
     region_label = serializers.SerializerMethodField()
     era_label = serializers.SerializerMethodField()
     status_label = serializers.SerializerMethodField()
+    starring = serializers.SerializerMethodField()
     # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
     # movie_release_date = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
-    movie_hot = serializers.SerializerMethodField()
+    # movie_hot = serializers.SerializerMethodField()
 
     class Meta:
         model = Movies
@@ -157,10 +158,16 @@ class MoviesSerializer(serializers.ModelSerializer):
         movie_status = SysDictData.objects.filter(dict_code=movie.movie_status)[0].dict_label
         return movie_status
 
-    def get_movie_hot(self, obj):
+    def get_starring(self, obj):
         movie = obj
-        order_count = Order.objects.filter(movie_id=movie.id).count()
-        return order_count
+        starring = Cast.objects.filter(movie_id=movie.id, cast_type=144).values('cast_name')[:3]
+        starring_list = [element['cast_name'] for element in list(starring)]
+        starring_str = ','.join(starring_list)
+        return starring_str
+    # def get_movie_hot(self, obj):
+    #     movie = obj
+    #     order_count = Order.objects.filter(movie_id=movie.id).count()
+    #     return order_count
 
 
 class SysDataSerializer(serializers.ModelSerializer):
@@ -199,6 +206,8 @@ class CommentSerializer(serializers.ModelSerializer):
     评论数据序列表类
     """
     movie_info = serializers.SerializerMethodField()
+    user_name = serializers.SerializerMethodField()
+    user_icon = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -213,6 +222,18 @@ class CommentSerializer(serializers.ModelSerializer):
             info = InformationManage.objects.filter(id=comment.movie_id)[0]
             data = InformationSerializer(info).data
         return data
+
+    def get_user_name(self, obj):
+        comment = obj
+        user = User.objects.filter(id=comment.user_id)[0]
+        user_name = UserSerializer(user).data["user_name"]
+        return user_name
+
+    def get_user_icon(self, obj):
+        comment = obj
+        user = User.objects.filter(id=comment.user_id)[0]
+        user_icon = UserSerializer(user).data["icon"]
+        return user_icon
 
 
 class MovieImagesSerializer(serializers.ModelSerializer):
@@ -247,11 +268,16 @@ class InformationSerializer(serializers.ModelSerializer):
     资讯数据序列表类
     """
 
-    # create_time = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    info_hot = serializers.SerializerMethodField()
 
     class Meta:
         model = InformationManage
         fields = "__all__"
+
+    def get_info_hot(self, obj):
+        info = obj
+        comment_count = Comment.objects.filter(movie_id=info.id, comment_type=1).count()
+        return comment_count
 
 
 class InformationImgSerializer(serializers.ModelSerializer):

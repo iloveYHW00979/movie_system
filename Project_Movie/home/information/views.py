@@ -1,5 +1,6 @@
 from django.http import HttpResponse, JsonResponse
 import json
+import re
 from Project_Movie.Util.utils import response_success, response_failure, \
     paginate_success, CustomPageNumberPagination
 from Project_Movie.Util.serializers import InformationSerializer, InformationImgSerializer, AdvertisingSerializer
@@ -15,8 +16,14 @@ class InformationList(APIView):
     """
 
     def get(self, request):
+        key_word = request.GET.get('key_word')
+        kwargs = {}
+
+        if key_word is not None:
+            kwargs['title__contains'] = key_word
+
         try:
-            information = InformationManage.objects.all()
+            information = InformationManage.objects.filter(**kwargs).all().order_by('-create_time')
             total = information.count()
 
             pg = CustomPageNumberPagination()  # 创建分页对象
@@ -43,14 +50,9 @@ class InformationDetail(APIView):
         try:
             information = InformationManage.objects.get(id=information_id)
             serializer = InformationSerializer(information)
-            img_list = InformationImg.objects.filter(information_id=information_id).all().values('img_url')
-            result = {
-                'information_data': serializer.data,
-                'img_data': list(img_list)
-            }
         except InformationManage.DoesNotExist:
             return response_failure(code=404)
-        return response_success(code=200, data=result)
+        return response_success(code=200, data=serializer.data)
 
     def put(self, request, information_id):
 
@@ -65,7 +67,6 @@ class InformationDetail(APIView):
             return response_success(code=200, data=serializer.data)
         return response_failure(code=400)
 
-    # TODO 级联删除
     def delete(self, request, information_id):
 
         try:
@@ -77,6 +78,57 @@ class InformationDetail(APIView):
         return response_success(code=200)
 
 
+class InformationImgList(APIView):
+    """
+    根据information_id检索图集或者创建一个新的图集。
+    根据information_id修改或者删除图集。
+    """
+
+    def get(self, request):
+        information_id = request.GET.get('information_id')
+        if information_id is None:
+            return response_failure(code=400)
+        try:
+            image = InformationImg.objects.filter(information_id=information_id).all()
+            serializer = InformationImgSerializer(image, many=True)
+        except InformationImg.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200, data=serializer.data)
+
+    def put(self, request):
+        image_id = request.data.get('image_id')
+        if image_id is None:
+            return response_failure(code=400)
+        try:
+            image = InformationImg.objects.get(id=image_id)
+            serializer = InformationImgSerializer(image, data=request.data)
+        except InformationImg.DoesNotExist:
+            return response_failure(code=404)
+
+        if serializer.is_valid():
+            serializer.save()
+            return response_success(code=200, data=serializer.data)
+        return response_failure(code=400)
+
+    def delete(self, request):
+        image_id = request.data.get('image_id')
+        if image_id is None:
+            return response_failure(code=400)
+        try:
+            image = InformationImg.objects.get(id=image_id)
+            image.delete()
+        except InformationImg.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200)
+
+    def post(self, request):
+        serializer = InformationImgSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response_success(code=200)
+        return response_failure(code=400)
+
+
 class AdvertisingInfor(APIView):
     """
     检索，更新一个轮播图示例。
@@ -86,7 +138,7 @@ class AdvertisingInfor(APIView):
         try:
             advertising = Advertising.objects.first()
             serializer = AdvertisingSerializer(advertising)
-        except InformationManage.DoesNotExist:
+        except Advertising.DoesNotExist:
             return response_failure(code=404)
         return response_success(code=200, data=serializer.data)
 
@@ -101,3 +153,18 @@ class AdvertisingInfor(APIView):
             serializer.save()
             return response_success(code=200, data=serializer.data)
         return response_failure(code=400)
+
+
+def sort_func(info_list):
+    return info_list["info_hot"]
+
+
+def get_hot_information(request):
+    try:
+        information = InformationManage.objects.all()
+        serializer = InformationSerializer(information, many=True)
+        info_list = serializer.data
+        hot_info = sorted(info_list, key=sort_func, reverse=True)[:10]
+    except InformationManage.DoesNotExist:
+        return response_failure(code=404)
+    return response_success(code=200, data=hot_info)
