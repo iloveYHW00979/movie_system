@@ -72,7 +72,7 @@ class UserPurseView(APIView):
         user_id =  request.query_params.get('user_id')
         if user_id:
             try:
-                data = Purse.objects.filter(user_id=user_id)
+                data = Purse.objects.filter(user_id=user_id).first()
             except:
                 raise
             if data:
