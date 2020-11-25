@@ -426,6 +426,17 @@ class FavoriteOperation(APIView):
             return response_success(code=200)
         return response_failure(code=400)
 
+    def get(self, request):
+        movie_id = request.GET.get('movie_id')
+        user_id = request.GET.get('user_id')
+        favorite = Favorite.objects.filter(movie_id=movie_id, user_id=user_id).first()
+
+        if favorite is None:
+            return response_success(code=200)
+        else:
+            serializer = FavoriteSerializer(favorite)
+            return response_success(code=200, data=serializer.data['id'])
+
 
 class ShowingList(APIView):
     """

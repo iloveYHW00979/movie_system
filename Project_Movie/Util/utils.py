@@ -74,18 +74,18 @@ class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10
     page_size_query_param = 'size'
 
-# # 上传图片
-# def upload_image(img_file):
-#     # 获取后缀名
-#     ext = img_file.name.split('.')[-1]
-#     # 如果上传图片的后缀名不在配置的后缀名里返回格式不允许
-#     if ext not in settings.ALLOWED_IMG_TYPE:
-#         return response_failure(code=415)
-#     # 新的文件名
-#     new_file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + str(
-#         random.randint(10000, 99999)) + '.' + ext  # 采用时间和随机数
-#     path = settings.UPLOAD_ADDRESS + new_file_name
-#     with open(path, 'wb') as f:  # 二进制写入
-#         for i in img_file.chunks():
-#             f.write(i)
-#     return path
+# 上传图片
+def upload_image(img_file):
+    # 获取后缀名
+    ext = img_file.name.split('.')[-1]
+    # 如果上传图片的后缀名不在配置的后缀名里返回格式不允许
+    if ext not in settings.ALLOWED_IMG_TYPE:
+        return response_failure(code=415)
+    # 新的文件名
+    new_file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + str(
+        random.randint(10000, 99999)) + '.' + ext  # 采用时间和随机数
+    path = settings.UPLOAD_ADDRESS + new_file_name
+    with open(path, 'wb') as f:  # 二进制写入
+        for i in img_file.chunks():
+            f.write(i)
+    return path

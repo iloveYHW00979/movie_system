@@ -8,4 +8,5 @@ urlpatterns = {
     path('information_img_list/', views.InformationImgList.as_view()),
     path('advertising/', views.AdvertisingInfor.as_view()),
     path('hot_information/', views.get_hot_information),
+    path('upload_img/', views.UploadImg.as_view()),
 }
