@@ -23,7 +23,7 @@ class Movies(models.Model):
     movie_box_office = models.DecimalField(max_digits=11, decimal_places=2, verbose_name='票房', null=True)
     movie_anticipate = models.IntegerField(verbose_name='想看数', null=True)
     movie_status = models.IntegerField(verbose_name='电影状态（关联基础数据表）', null=True)
-    movie_hot = models.IntegerField(verbose_name='热度（订单数）', null=True)
+    # movie_hot = models.IntegerField(verbose_name='热度（订单数）', null=True)
 
     class Meta:
         db_table = 'movies'

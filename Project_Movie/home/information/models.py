@@ -25,6 +25,7 @@ class InformationManage(models.Model):
     create_time = models.DateTimeField(null=True, verbose_name='创建时间', default=timezone.now)
     img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
     issuer = models.CharField(max_length=50, null=True, verbose_name='发布者')
+    content_copy = models.CharField(max_length=1500, verbose_name='内容副本', null=True)
 
     class Meta:
         managed = False
