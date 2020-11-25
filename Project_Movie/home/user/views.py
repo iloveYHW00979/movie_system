@@ -55,12 +55,15 @@ class UserInfoView(APIView):
             try:
                 user_info = User.objects.filter(id=user_id)
                 order = Order.objects.filter(user_id=user_id)
+                comment = Comment.objects.filter(user_id=user_id)
                 if user_info:
                     user_info.delete()
                 else:
                     return response_failure('没有该用户id')
                 if order:
                     order.delete()
+                if comment:
+                    comment.delete()
                 return response_success(code=200)
             except:
                 return response_failure('数据库操作错误:没有该用户')
