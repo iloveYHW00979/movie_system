@@ -2,7 +2,7 @@ from django.http import HttpResponse, JsonResponse
 import json
 import re
 from Project_Movie.Util.utils import response_success, response_failure, \
-    paginate_success, CustomPageNumberPagination
+    paginate_success, CustomPageNumberPagination, upload_image
 from Project_Movie.Util.serializers import InformationSerializer, InformationImgSerializer, AdvertisingSerializer
 from Project_Movie.home.information.models import InformationManage, InformationImg, Advertising
 
@@ -168,3 +168,17 @@ def get_hot_information(request):
     except InformationManage.DoesNotExist:
         return response_failure(code=404)
     return response_success(code=200, data=hot_info)
+
+
+class UploadImg(APIView):
+    '''
+    上传图片
+    '''
+
+    def post(self, request):
+        img_file = request.FILES.get('img_file')
+
+        if img_file is None:
+            return response_failure(code=400)
+        img_url = upload_image(img_file)
+        return response_success(code=200, data=img_url)
