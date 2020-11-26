@@ -88,15 +88,14 @@ class UserPurseView(APIView):
 
     def post(self, request):
         """充值余额"""
-        user_id = request.data.get('user_id')
-        overage = request.data.get('overage')
-        if user_id and overage:
+        user_id = request.get('user_id')
+        if user_id:
             try:
                 user = User.objects.filter(id=user_id)
             except:
                 raise
             if user:
-                serializer = PurseSerializer(data=request.data)
+                serializer = PurseSerializer(data=request)
                 if serializer.is_valid():
                     serializer.save()
                 else:
@@ -124,6 +123,7 @@ class UserPurseView(APIView):
                 else:
                     return response_failure('数据库更新失败')
             else:
+
                 return response_failure('没有该用户的余额信息')
             return response_success(code=200, data=serializer.data)
 

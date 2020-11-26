@@ -268,7 +268,7 @@ class CinemaOrder(APIView):
                     page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
                     serializer = OrderSerializer(page_order, many=True)
                 else:
-                    return response_failure('该用户没有订单信息')
+                    return response_failure('没有订单信息')
         except:
             raise
         return paginate_success(code=200, data=serializer.data, total=order_info.count())
@@ -404,5 +404,3 @@ class AllViewings(APIView):
             raise
         return paginate_success(code=200, data=list(page_order), total=view.count())
 
-
-        # return response_success(code=200, data=list(view))
