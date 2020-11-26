@@ -78,7 +78,7 @@ class CinemaView(APIView):
                         return response_failure('添加影院信息失败')
             except Exception as e:
                 raise e
-            return response_success(code=201)
+            return response_success(code=200)
 
     def put(self, request):
         # 修改影院信息

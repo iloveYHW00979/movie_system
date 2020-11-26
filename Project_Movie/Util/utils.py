@@ -74,7 +74,7 @@ def paginate_success(code=None, message=None, data=None, total=0):
 # 分页页数设置
 class CustomPageNumberPagination(PageNumberPagination):
     page_size = 10  # 每页显示的条数
-    page_size_query_param = 'page_size'  # 前端发送的页数关键字名
+    page_size_query_param = 'size'  # 前端发送的页数关键字名
     max_page_size = 20  # 每页最大显示的条数
 
     def paginate_queryset(self, queryset, request, view=None):
@@ -113,8 +113,8 @@ class CustomPageNumberPagination(PageNumberPagination):
 
         if not empty:
 
-            # self.page = paginator.page(1)
-            self.page = []
+            self.page = paginator.page(1)
+            # self.page = []
 
         return list(self.page)
 

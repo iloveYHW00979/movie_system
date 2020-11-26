@@ -1,3 +1,4 @@
+import base64
 import re
 from django.db.utils import IntegrityError
 from rest_framework.views import APIView
@@ -33,7 +34,16 @@ class RegisterView(APIView):
             if user_info:
                 return response_failure('用户名已存在')
             else:
-                serializer = UserSerializer(data=request.data)
+                data = {
+                    'user_name':user_name,
+                    'password':base64.b64encode(password.encode('utf-8')).decode('utf-8'),
+                    "address":query_params.get('address'),
+                    "sex":query_params.get('sex'),
+                    "sign":query_params.get('sign'),
+                    "e_mail":query_params.get('e_mail'),
+                    "icon":query_params.get('icon')
+                }
+                serializer = UserSerializer(data=data)
                 if serializer.is_valid():
                     serializer.save()
                     request = {
@@ -62,7 +72,7 @@ class LoginView(APIView):
         try:
             user_info = User.objects.filter(user_name=user_name).first()
             if user_info:
-                if user_info.password != password:
+                if base64.b64decode(user_info.password.encode('utf-8')).decode('utf-8') != password:
                     return response_failure('登陆密码错误')
                 return response_success(code=200, data=UserSerializer(user_info).data)
 
