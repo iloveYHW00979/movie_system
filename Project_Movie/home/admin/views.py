@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 from Project_Movie.Util.serializers import UserSerializer
 from Project_Movie.Util.utils import response_failure, response_success
 from Project_Movie.home.user.models import *
+from Project_Movie.home.user.views import UserPurseView
+
 
 class RegisterView(APIView):
 
@@ -34,7 +36,12 @@ class RegisterView(APIView):
                 serializer = UserSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                    return response_success(code=201)
+                    request = {
+                            "user_id": serializer.data.get('id'),
+                            "overage": 0
+                            }
+                    if UserPurseView().post(request):
+                        return response_success(code=201)
         except IntegrityError:  # 数据完整性错误
             return response_failure('参数错误')
 
