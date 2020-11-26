@@ -34,8 +34,8 @@ class InformationManage(models.Model):
 
 
 class Advertising(models.Model):
+    movie_id = models.IntegerField(null=True, verbose_name='电影id')
     img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
-    img_link = models.CharField(max_length=255, null=True, verbose_name='跳转链接')
 
     class Meta:
         managed = False

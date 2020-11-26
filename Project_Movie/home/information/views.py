@@ -131,20 +131,30 @@ class InformationImgList(APIView):
 
 class AdvertisingInfor(APIView):
     """
-    检索，更新一个轮播图示例。
+    检索，新增轮播图示例。
     """
 
     def get(self, request):
         try:
-            advertising = Advertising.objects.first()
-            serializer = AdvertisingSerializer(advertising)
+            advertising = Advertising.objects.all()
+            serializer = AdvertisingSerializer(advertising, many=True)
         except Advertising.DoesNotExist:
             return response_failure(code=404)
         return response_success(code=200, data=serializer.data)
 
+    def post(self, request):
+        serializer = AdvertisingSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return response_success(code=200)
+        return response_failure(code=400)
+
     def put(self, request):
+        advertising_id = request.data.get('advertising_id')
+        if advertising_id is None:
+            return response_failure(code=400)
         try:
-            advertising = Advertising.objects.first()
+            advertising = Advertising.objects.get(id=advertising_id)
             serializer = AdvertisingSerializer(advertising, data=request.data)
         except Advertising.DoesNotExist:
             return response_failure(code=404)
@@ -153,6 +163,18 @@ class AdvertisingInfor(APIView):
             serializer.save()
             return response_success(code=200, data=serializer.data)
         return response_failure(code=400)
+
+    def delete(self, request):
+        advertising_id = request.query_params.get('advertising_id')
+        if advertising_id is None:
+            return response_failure(code=400)
+        try:
+            advertising = Advertising.objects.get(id=advertising_id)
+            advertising.delete()
+
+        except InformationManage.DoesNotExist:
+            return response_failure(code=404)
+        return response_success(code=200)
 
 
 def sort_func(info_list):

@@ -73,7 +73,7 @@ class MovieList(APIView):
         print(request.data)
         movie = Movies.objects.filter(movie_name=movie_name)
         if movie:
-            return response_failure(code=500, message='数据已存在')
+            return response_failure(message='数据已存在')
         else:
             serializer = MoviesSerializer(data=request.data)
             if serializer.is_valid():
