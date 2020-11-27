@@ -110,7 +110,12 @@ class MovieDetail(APIView):
     def delete(self, request, movie_id):
         try:
             movie = Movies.objects.get(id=movie_id)
-            movie.delete()
+            if movie:
+                movie.delete()
+
+            comment = Comment.objects.filter(movie_id=movie_id)
+            if comment:
+                comment.delete()
         except Movies.DoesNotExist:
             return response_failure(code=404)
         return response_success(code=200)
