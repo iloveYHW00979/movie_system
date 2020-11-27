@@ -8,7 +8,7 @@ GENDER_CHOICES = (
 class User(models.Model):
     """用户信息模型类"""
     id = models.AutoField(primary_key=True)
-    user_name = models.CharField(max_length=256, verbose_name=u'用户名')
+    user_name = models.CharField(max_length=256, verbose_name=u'用户名', null=True)
     password = models.CharField(max_length=256, verbose_name=u'密码', null=True)
     sex = models.CharField(max_length=256, choices=GENDER_CHOICES, verbose_name=u'性别', null=True)
     e_mail= models.CharField(max_length=256, verbose_name=u'邮箱', null=True)

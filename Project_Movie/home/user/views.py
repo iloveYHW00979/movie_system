@@ -37,7 +37,7 @@ class UserInfoView(APIView):
         try:
             user_info = User.objects.filter(id=user_id).first()
             if user_info:
-                serializer = UserSerializer(user_info, request.data)
+                serializer = UserSerializer(user_info, data=request.data)
                 if serializer.is_valid():
                     serializer.save()
                 else:

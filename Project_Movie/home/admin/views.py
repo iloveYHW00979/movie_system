@@ -51,7 +51,7 @@ class RegisterView(APIView):
                             "overage": 0
                             }
                     if UserPurseView().post(request):
-                        return response_success(code=201)
+                        return response_success(code=200)
         except IntegrityError:  # 数据完整性错误
             return response_failure('参数错误')
 

@@ -207,7 +207,7 @@ class CinemaViewing(APIView):
                     return response_failure('数据库保存失败')
             except :
                 raise
-            return response_success(code=201)
+            return response_success(code=200)
     # 更新场次信息
     def put(self, request):
         query_param = request.data
@@ -263,12 +263,15 @@ class CinemaOrder(APIView):
                 else:
                     # 查询所有订单
                     order_info = Order.objects.all().order_by('id')
-                if order_info:
-                    # 创建分页对象
-                    page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
-                    serializer = OrderSerializer(page_order, many=True)
-                else:
-                    return response_failure('没有订单信息')
+            else:
+                # 查询所有订单
+                order_info = Order.objects.all().order_by('id')
+            if order_info:
+                # 创建分页对象
+                page_order = CustomPageNumberPagination().paginate_queryset(queryset=order_info, request=request, view=self)  # 获取分页的数据
+                serializer = OrderSerializer(page_order, many=True)
+            else:
+                return response_failure('没有订单信息')
         except:
             raise
         return paginate_success(code=200, data=serializer.data, total=order_info.count())
@@ -343,7 +346,7 @@ class CinemaOrder(APIView):
                         return response_failure('获取订单编号失败')
             except Exception as e:
                 raise e
-            return response_success(code=201,data=order.order_num)
+            return response_success(code=200,data=order.order_num)
     #  删除订单
     def delete(self, request):
         query_params = request.query_params
@@ -374,7 +377,7 @@ class SeatView(APIView):
                     return response_failure('场次不存在')
             except:
                 raise
-            return response_success(code=201)
+            return response_success(code=200)
 
 class SearchView(APIView):
     """模糊查询影院信息"""
