@@ -21,10 +21,10 @@ class RegisterView(APIView):
         # - 校验数据合法性
         # 所有的参数都不为空时,all方法才会返回True
         if not all([user_name, password, password2]):
-            return response_failure('参数不能为空')
+            return response_failure(code=400, message='参数不能为空')
 
         if password != password2:
-            return response_failure('两次输入的密码不一致')
+            return response_failure(code=400, message='两次输入的密码不一致')
 
         # if not re.match('^[a-z0-9][\w.\-]*@[a-z0-9\-]+(\.[a-z]{2,5}){1,2}$', e_mail):
         #     return response_failure('邮箱格式不正确')
@@ -32,7 +32,7 @@ class RegisterView(APIView):
         try:
             user_info = User.objects.filter(user_name=user_name)
             if user_info:
-                return response_failure('用户名已存在')
+                return response_failure(code=400, message='用户名已存在')
             else:
                 data = {
                     'user_name':user_name,
@@ -53,7 +53,7 @@ class RegisterView(APIView):
                     if UserPurseView().post(request):
                         return response_success(code=200)
         except IntegrityError:  # 数据完整性错误
-            return response_failure('参数错误')
+            return response_failure(code=400, message='参数错误')
 
 class LoginView(APIView):
 
@@ -68,16 +68,16 @@ class LoginView(APIView):
 
         # 校验参数合法性
         if not all([user_name, password]):
-            return response_failure('用户名或密码不能为空')
+            return response_failure(code=400, message='用户名或密码不能为空')
         try:
             user_info = User.objects.filter(user_name=user_name).first()
             if user_info:
                 if base64.b64decode(user_info.password.encode('utf-8')).decode('utf-8') != password:
-                    return response_failure('登陆密码错误')
+                    return response_failure(code=400, message='登陆密码错误')
                 return response_success(code=200, data=UserSerializer(user_info).data)
 
             else:
-                return response_failure('该用户不存在')
+                return response_failure(code=400, message='该用户不存在')
         except:
             raise
 

@@ -16,7 +16,7 @@ class UserInfoView(APIView):
             if user_id:
                 data = User.objects.filter(id=user_id).order_by('id')
                 if len(data) == 0:
-                    return response_failure('没有该id的用户')
+                    return response_failure(code=400, message='没有该id的用户')
             else:
                 data = User.objects.all().order_by('id')
         except Exception as e:
@@ -33,7 +33,7 @@ class UserInfoView(APIView):
         user_id = query_params.get('id')
         password = query_params.get('password')
         if password == '':
-            return response_failure('密码不能为空')
+            return response_failure(code=400, message='密码不能为空')
         try:
             user_info = User.objects.filter(id=user_id).first()
             if user_info:
@@ -41,9 +41,9 @@ class UserInfoView(APIView):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    return response_failure('保存数据失败')
+                    return response_failure(code=400, message='保存数据失败')
             else:
-                return response_failure('没有该用户id')
+                return response_failure(code=400, message='没有该用户id')
         except Exception as e:
             raise e
         return response_success(code=200)
@@ -59,14 +59,14 @@ class UserInfoView(APIView):
                 if user_info:
                     user_info.delete()
                 else:
-                    return response_failure('没有该用户id')
+                    return response_failure(code=400, message='没有该用户id')
                 if order:
                     order.delete()
                 if comment:
                     comment.delete()
                 return response_success(code=200)
             except:
-                return response_failure('数据库操作错误:没有该用户')
+                return response_failure(code=400, message='数据库操作错误:没有该用户')
 
 class UserPurseView(APIView):
 
@@ -78,12 +78,12 @@ class UserPurseView(APIView):
                 data = Purse.objects.filter(user_id=user_id).first()
             except:
                 raise
-            if data:
-                serializer = PurseSerializer(data)
-            else:
-                return response_failure('没有该用户的余额信息')
+            # if data:
+            serializer = PurseSerializer(data)
+            # else:
+            #     return response_failure('没有该用户的余额信息')
         else:
-            return response_failure('请输入用户id')
+            return response_failure(code=400, message='请输入用户id')
         return response_success(code=200,data=serializer.data)
 
     def post(self, request):
@@ -99,10 +99,10 @@ class UserPurseView(APIView):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    return response_failure('数据存储失败')
+                    return response_failure(code=400, message='数据存储失败')
             else:
-                return response_failure('没有该用户信息')
-            return response_success(code=201, data=serializer.data)
+                return response_failure(code=400, message='没有该用户信息')
+            return response_success(code=200, data=serializer.data)
 
     def put(self, request):
         user_id = request.data.get('user_id')
@@ -121,10 +121,10 @@ class UserPurseView(APIView):
                 if serializer.is_valid():
                     serializer.save()
                 else:
-                    return response_failure('数据库更新失败')
+                    return response_failure(code=400, message='数据库更新失败')
             else:
 
-                return response_failure('没有该用户的余额信息')
+                return response_failure(code=400, message='没有该用户的余额信息')
             return response_success(code=200, data=serializer.data)
 
 class UserCommentView(APIView):
@@ -139,14 +139,14 @@ class UserCommentView(APIView):
             elif user_id:
                 data = Comment.objects.filter(user_id=user_id).order_by('id')
             else:
-                return response_failure('参数错误')
-            if data:
+                return response_failure(code=400, message='参数错误')
+            # if data:
                 # 创建分页对象
-                page_order = CustomPageNumberPagination().paginate_queryset(queryset=data, request=request, view=self)  # 获取分页的数据
-                serializer = CommentSerializer(page_order, many=True)
-                return paginate_success(code=200, data=serializer.data, total=data.count())
-            else:
-                return response_failure('当前用户没有对应评论')
+            page_order = CustomPageNumberPagination().paginate_queryset(queryset=data, request=request, view=self)  # 获取分页的数据
+            serializer = CommentSerializer(page_order, many=True)
+            return paginate_success(code=200, data=serializer.data, total=data.count())
+            # else:
+            #     return response_failure('当前用户没有对应评论')
 
 class UserCollectView(APIView):
     """用户收藏列表"""
@@ -157,12 +157,12 @@ class UserCollectView(APIView):
                 collect = Favorite.objects.filter(user_id=user_id).order_by('id')
             except:
                 raise
-            if collect:
+            # if collect:
                 # 创建分页对象
-                page_order = CustomPageNumberPagination().paginate_queryset(queryset=collect, request=request, view=self)  # 获取分页的数据
-                serializer = FavoriteSerializer(page_order, many=True)
-                return paginate_success(code=200, data=serializer.data, total=collect.count())
-            else:
-                return response_failure('当前用户收藏电影')
+            page_order = CustomPageNumberPagination().paginate_queryset(queryset=collect, request=request, view=self)  # 获取分页的数据
+            serializer = FavoriteSerializer(page_order, many=True)
+            return paginate_success(code=200, data=serializer.data, total=collect.count())
+            # else:
+            #     return response_failure('当前用户收藏电影')
         else:
-            return response_failure('请输入要查询的用户id')
+            return response_failure(code=400, message='请输入要查询的用户id')

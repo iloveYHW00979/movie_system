@@ -1,4 +1,8 @@
 from django.db import models
+seat_default = '[[1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1],' \
+               ' [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], ' \
+               '[1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1]]'
+
 
 class Cinema(models.Model):
     name = models.CharField(max_length=255, verbose_name=u'影院名称', null=True)
@@ -31,7 +35,7 @@ class Viewing(models.Model):
 
 class Seat(models.Model):
     view_id = models.IntegerField(verbose_name=u'场次id', null=True)
-    seat = models.TextField(verbose_name=u'座位', null=True)
+    seat = models.TextField(verbose_name=u'座位', null=True, default=seat_default)
     class Meta:
         # abstract = True
         db_table = 'seat'
