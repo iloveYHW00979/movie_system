@@ -67,14 +67,14 @@ class CinemaView(APIView):
                 name_list = Cinema.objects.filter(name=query_param.get('name'))
                 if name_list:
                     error_info = '%s该影院名称已经存在了' % query_param.get('name')
-                    return response_failure(message=error_info)
+                    return response_failure(code=400, message=error_info)
                 else:
                     # 数据保存在数据库中
                     serializer = CinemaSerializer(data=query_param)
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        return response_failure('添加影院信息失败')
+                        return response_failure(code=400, message='添加影院信息失败')
             except Exception as e:
                 raise e
             return response_success(code=200)
@@ -86,13 +86,13 @@ class CinemaView(APIView):
             try:
                 cinema = Cinema.objects.filter(id=query_param.get('cinema_id')).first()
                 if cinema is None:
-                    return response_failure('该影院不存在')
+                    return response_failure(code=400, message='该影院不存在')
                 else:
                     serializer = CinemaSerializer(cinema, data=query_param)
                     if serializer.is_valid():
                         serializer.save()
                     else:
-                        return response_failure('数据库更新失败')
+                        return response_failure(code=400, message='数据库更新失败')
             except:
                 raise
             return response_success(code=200)
@@ -103,12 +103,14 @@ class CinemaView(APIView):
         if query_param:
             try:
                 cinema = Cinema.objects.filter(id=query_param.get('id'))
+                views = Viewing.objects.filter(cinema_id=query_param.get('id'))
             except:
                 raise
-            if cinema is None:
-                error_info = '该影院不存在'
-                return response_failure(message=error_info)
+            if not cinema:
+                return response_failure(code=400, message='该影院不存在')
             else:
+                if views:
+                    views.delete()
                 cinema.delete()
                 return response_success(code=200)
 
@@ -189,6 +191,9 @@ class CinemaViewing(APIView):
     # 添加场次信息
     def post(self, request):
         query_params = request.data
+        seat_default = '[[1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1],' \
+                       ' [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], ' \
+                       '[1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1, 1, 1, 1]]'
         if query_params:
             movie_id = query_params.get('movie_id')
             view_name = query_params.get('view_name')
@@ -201,8 +206,12 @@ class CinemaViewing(APIView):
                 serializer = ViewingSerializer(data=request.data)
                 if serializer.is_valid():
                     serializer.save()
-                else:
-                    return response_failure(code=400, message='数据库保存失败')
+                    request = {
+                        "view_id":serializer.data.get('id'),
+                        'seat':seat_default
+                    }
+                    if not SeatView().post(request):
+                        return response_failure(code=400, message='数据库保存失败')
             except :
                 raise
             return response_success(code=200)
@@ -232,7 +241,7 @@ class CinemaViewing(APIView):
                 view = Viewing.objects.filter(id=query_param.get('id'))
             except:
                 raise
-            if view is None:
+            if not view:
                 return response_failure(code=400, message='该场次不存在')
             else:
                 view.delete()
@@ -361,20 +370,19 @@ class CinemaOrder(APIView):
 class SeatView(APIView):
     """创建/更新座位信息"""
     def post(self, request):
-        data = request.data
-        if data:
-            try:
-                view = Viewing.objects.filter(id=data.get('view_id')).first()
-                if view:
-                    view_seat = Seat.objects.filter(view_id=data.get('view_id')).first()
-                    serializer = SeatSerializer(view_seat, data=request.data)
-                    if serializer.is_valid():
-                        serializer.save()
-                else:
-                    return response_failure(code=400, message='场次不存在')
-            except:
-                raise
-            return response_success(code=200)
+        view_id = request.get('view_id')
+        try:
+            view = Viewing.objects.filter(id=view_id).first()
+            if view:
+                view_seat = Seat.objects.filter(view_id=view_id).first()
+                serializer = SeatSerializer(view_seat, data=request)
+                if serializer.is_valid():
+                    serializer.save()
+            else:
+                return response_failure(code=400, message='场次不存在')
+        except:
+            raise
+        return response_success(code=200)
 
 class SearchView(APIView):
     """模糊查询影院信息"""

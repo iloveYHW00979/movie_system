@@ -111,7 +111,7 @@ DATABASES = {
     'default':
         {
             'ENGINE': 'django.db.backends.mysql',  # 数据库引擎
-            'NAME': 'movieproject',  # 数据库名称
+            'NAME': 'movie_project',  # 数据库名称
             'HOST': '192.168.3.168',  # 数据库地址
             'PORT': 3306,  # 端口
             'USER': 'root',  # 数据库用户名

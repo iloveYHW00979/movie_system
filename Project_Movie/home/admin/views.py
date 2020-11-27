@@ -16,8 +16,21 @@ class RegisterView(APIView):
         user_name = query_params.get('user_name')
         password = query_params.get('password')
         password2 = query_params.get('password2')
-        # e_mail = query_params.get('e_mail')
-
+        e_mail = query_params.get('e_mail')
+        address = query_params.get('address')
+        sex = query_params.get('sex')
+        icon = query_params.get('icon')
+        sign = query_params.get('sign')
+        if not e_mail:
+            e_mail = None
+        if not address:
+            address = None
+        if not sex:
+            sex = None
+        if not icon:
+            icon = None
+        if not sign:
+            sign = None
         # - 校验数据合法性
         # 所有的参数都不为空时,all方法才会返回True
         if not all([user_name, password, password2]):
@@ -37,11 +50,11 @@ class RegisterView(APIView):
                 data = {
                     'user_name':user_name,
                     'password':base64.b64encode(password.encode('utf-8')).decode('utf-8'),
-                    "address":query_params.get('address'),
-                    "sex":query_params.get('sex'),
-                    "sign":query_params.get('sign'),
-                    "e_mail":query_params.get('e_mail'),
-                    "icon":query_params.get('icon')
+                    "address":address,
+                    "sex":sex,
+                    "sign":sign,
+                    "e_mail":e_mail,
+                    "icon":icon
                 }
                 serializer = UserSerializer(data=data)
                 if serializer.is_valid():
@@ -51,6 +64,7 @@ class RegisterView(APIView):
                             "overage": 0
                             }
                     if UserPurseView().post(request):
+
                         return response_success(code=200)
         except IntegrityError:  # 数据完整性错误
             return response_failure(code=400, message='参数错误')

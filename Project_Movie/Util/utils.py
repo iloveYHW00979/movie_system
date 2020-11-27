@@ -54,7 +54,8 @@ def response_success(code=None, message=None, data=None):
 
 # 查询失败
 def response_failure(code=None, message=None):
-    message = status_code.get(code)
+    if not message:
+        message = status_code.get(code)
     return HttpResponse(json.dumps({
         'code': code,
         'msg': message
