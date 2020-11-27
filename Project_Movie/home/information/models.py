@@ -10,7 +10,7 @@ from django.utils import timezone
 
 
 class InformationImg(models.Model):
-    information_id = models.IntegerField(null=True, verbose_name='资讯id')
+    information_id = models.IntegerField(verbose_name='资讯id')
     img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
 
     class Meta:
@@ -34,7 +34,7 @@ class InformationManage(models.Model):
 
 
 class Advertising(models.Model):
-    movie_id = models.IntegerField(null=True, verbose_name='电影id')
+    movie_id = models.IntegerField(verbose_name='电影id')
     img_url = models.ImageField(upload_to='static/imformation', verbose_name='图片', null=True)
 
     class Meta:
