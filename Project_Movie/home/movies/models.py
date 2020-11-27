@@ -38,7 +38,7 @@ class Comment(models.Model):
     create_time = models.DateTimeField(verbose_name=u'创建时间', null=True, default=timezone.now)
     update_time = models.DateTimeField(verbose_name=u'更新时间', null=True, default=timezone.now)
     delete_time = models.DateTimeField(verbose_name=u'删除时间', null=True)
-    score = models.IntegerField(verbose_name=u'评分')
+    score = models.IntegerField(null=True, verbose_name=u'评分')
     content = models.TextField(null=True, verbose_name=u'评论')
     comment_type = models.IntegerField(verbose_name=u'评论类型 0：电影/1：资讯)', null=True)
 
@@ -86,8 +86,8 @@ class Favorite(models.Model):
 
     id = models.AutoField(primary_key=True, verbose_name='id')
     create_time = models.DateTimeField(verbose_name='创建时间', null=True, default=timezone.now)
-    movie_id = models.IntegerField(verbose_name='电影id')
-    user_id = models.IntegerField(verbose_name='用户id')
+    movie_id = models.IntegerField(verbose_name='电影id', null=True)
+    user_id = models.IntegerField(verbose_name='用户id', null=True)
 
     class Meta:
         db_table = 'favorite'
